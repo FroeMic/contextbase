@@ -1,0 +1,6 @@
+schema: spec-driven
+created: 2026-06-25
+goal: Create a Manifest V3 browser-extension PoC that can be loaded locally,
+  configured with Contextbase API settings, extract the visible ChatGPT
+  conversation, and manually sync it into the workspace-scoped session-capture
+  API.

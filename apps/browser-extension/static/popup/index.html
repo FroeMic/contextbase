@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./popup.css" />
+    <title>Contextbase Capture</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Contextbase</h1>
+        <p id="status">Loading...</p>
+      </header>
+
+      <label>
+        API base URL
+        <input id="apiBaseUrl" value="http://127.0.0.1:3017" spellcheck="false" />
+      </label>
+
+      <section>
+        <label>
+          Temporary API token
+          <input id="apiToken" type="password" autocomplete="off" />
+        </label>
+        <button id="pair" type="button">Pair</button>
+      </section>
+
+      <section>
+        <label>
+          Existing capture token
+          <input id="captureToken" type="password" autocomplete="off" />
+        </label>
+        <button id="pasteToken" type="button">Save Token</button>
+      </section>
+
+      <footer>
+        <button id="capture" type="button">Capture Current Session</button>
+        <button id="clear" type="button">Clear</button>
+      </footer>
+    </main>
+    <script type="module" src="./popup.js"></script>
+  </body>
+</html>
