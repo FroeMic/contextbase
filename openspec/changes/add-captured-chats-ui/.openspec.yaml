@@ -1,0 +1,3 @@
+schema: spec-driven
+created: 2026-06-25
+goal: Show workspace-scoped captured chat sessions in the Contextbase web UI using the existing app shell and an Otto-inspired conversation history/transcript design.
