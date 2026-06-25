@@ -14,6 +14,7 @@ ChatGPT also virtualizes long conversations. A tab may initially expose only the
 - Record coverage metadata so Contextbase can distinguish partial captures from sessions where the extension has observed the oldest/top boundary and/or latest/bottom boundary.
 - Keep manual capture as a user-triggered force sync/debug action.
 - Add extension-side diagnostics for automatic sync status, queue state, and last failure.
+- Keep the first implementation intentionally small: reuse the existing sync endpoint, store coverage in metadata/snapshots unless typed columns become necessary, and implement simple bounded retry before adding durable background queue complexity.
 
 ## Capabilities
 
@@ -28,7 +29,7 @@ ChatGPT also virtualizes long conversations. A tab may initially expose only the
 ## Impact
 
 - Extends `apps/browser-extension` content/background behavior.
-- May extend session-capture contracts with optional sync metadata such as `syncMode`, `observedMessageKeys`, and coverage boundary fields.
-- May extend backend persistence with coverage fields on `captured_sessions` or source snapshots if existing metadata fields are not sufficient.
+- Extends session-capture contracts with optional sync metadata such as `syncMode`, `observedMessageKeys`, and coverage boundary fields.
+- Prefer existing session metadata/source snapshots for coverage persistence in the first implementation; add typed columns only if tests or web querying require them.
 - Adds E2E tests for automatic sync on page open, repeated observations, scroll-loaded older messages, and boundary detection.
 - Does not crawl the ChatGPT sidebar, open hidden sessions, collect provider credentials, or sync tabs the user has not opened.

@@ -6,7 +6,7 @@ Contextbase SHALL automatically sync supported ChatGPT sessions from configured 
 #### Scenario: Initial supported session load
 - **WHEN** a configured extension observes an open ChatGPT conversation tab
 - **THEN** it extracts the currently available session data after the page settles
-- **AND** sends an automatic sync batch through extension-owned code using the stored capture token
+- **AND** sends an automatic sync batch through the existing session-capture sync API using extension-owned code and the stored capture token
 - **AND** does not expose the stored capture token to the provider page content script
 
 #### Scenario: Unsupported or unconfigured tab
@@ -89,7 +89,12 @@ Contextbase SHALL keep automatic sync bounded, observable, and recoverable.
 #### Scenario: API failure
 - **WHEN** an automatic sync request fails
 - **THEN** the extension records the failure for diagnostics
-- **AND** retries with bounded backoff without discarding newer observations
+- **AND** retries with bounded backoff or on the next relevant observation without discarding newer observations
+
+#### Scenario: Browser restart
+- **WHEN** the browser or extension service worker restarts before a failed automatic sync is retried
+- **THEN** the first implementation may recover by observing the open ChatGPT tab again
+- **AND** it is not required to preserve a durable unsent queue across browser restarts
 
 #### Scenario: User-visible status
 - **WHEN** the popup opens for a configured extension

@@ -26,6 +26,18 @@ The extension should sync only sessions the user has opened in a browser tab. It
 
 ## Decisions
 
+### Keep the first implementation narrow
+
+The first implementation should prove the core loop:
+
+1. Observe an opened ChatGPT conversation.
+2. Extract the visible messages and coverage hints.
+3. Send an automatic sync through the existing session-capture sync API.
+4. Upsert messages idempotently.
+5. Sync additional messages when scroll or DOM changes reveal them.
+
+It should not introduce a new endpoint, a new durable queue subsystem, or new typed coverage columns unless the existing contracts/storage cannot satisfy the tests.
+
 ### Trigger automatic sync from content-script observation
 
 The ChatGPT content script should initialize on supported conversation URLs after the extension is configured. It should extract an initial visible snapshot, then observe relevant DOM mutations and scroll/visibility events to schedule incremental syncs.
@@ -37,6 +49,8 @@ Alternative considered: background polling. Polling tabs from the service worker
 The content script should extract message/session data and send it to the background service worker. The background service worker should own capture-token access, queueing, debouncing, retries, and API calls.
 
 This preserves the existing security boundary: provider-page code never receives the stored Contextbase capture token.
+
+Automatic sync should use the existing session-capture sync endpoint with optional observation metadata. A separate endpoint is only justified later if the backend semantics diverge materially from manual sync.
 
 ### Treat messages as observed facts, not one complete transcript
 
@@ -61,16 +75,18 @@ Coverage is session-level metadata, not a property of an individual message. The
 - `latestObservedMessageKey`
 - `observationReason`: `initial_load`, `mutation`, `scroll`, `manual_force`, or `retry`
 
-If the current database schema can store this in `captured_sessions.metadata_json` or source snapshots, no migration is required. If querying coverage in the web app becomes necessary, add typed columns.
+The first implementation should store this in `captured_sessions.metadata_json` or source snapshots if possible. If querying coverage in the web app becomes necessary, add typed columns in a later change.
 
 ### Bound sync frequency
 
-Automatic sync should use a per-tab debounce and per-session queue:
+Automatic sync should use a simple per-tab debounce and latest-observation queue:
 
 - Initial extraction after the page settles.
 - Mutation/scroll observations coalesced over a short debounce window.
 - No API call when the extracted message identity set is unchanged from the last accepted batch.
-- Retry failed syncs with bounded backoff while preserving the latest unsynced observation.
+- Retry failed syncs with bounded backoff or on the next observation/focus/popup-open event while preserving the latest unsynced observation.
+
+Durable retry across browser restarts is not required for the first implementation.
 
 ## Risks / Trade-offs
 
@@ -78,11 +94,11 @@ Automatic sync should use a per-tab debounce and per-session queue:
 - Virtualized lists can remove messages from the DOM. The extension must remember observed message keys per source session during the tab lifetime.
 - Fallback message keys can collide on repeated short messages. Provider IDs and DOM attributes should be preferred whenever available.
 - Automatic sync can create noisy API traffic. Debounce, dedupe, and queue visibility are required before enabling it by default.
-- MV3 service workers suspend. Queue state needed for correctness should be persisted or recoverable from storage.
+- MV3 service workers suspend. The first implementation should be recoverable by observing the tab again; durable queued delivery can follow after the core loop works.
 
 ## Open Questions
 
-- Should automatic sync be enabled immediately after pairing, or controlled by a popup toggle?
+- Should automatic sync default on after pairing with a popup toggle for control?
 - Should the popup show a per-tab "auto-sync active" indicator, or only last sync status?
 - Which ChatGPT DOM signals are reliable enough to declare `oldestBoundarySeen` and `latestBoundarySeen`?
 - Should coverage completeness be visible in the web app in this change, or only stored for later UI?
