@@ -1,0 +1,50 @@
+{
+  "name": "@contextbase/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./domains/invitations": {
+      "types": "./dist/domains/invitations.d.ts",
+      "default": "./dist/domains/invitations.js"
+    },
+    "./domains/users": {
+      "types": "./dist/domains/users.d.ts",
+      "default": "./dist/domains/users.js"
+    },
+    "./domains/workspace-members": {
+      "types": "./dist/domains/workspace-members.d.ts",
+      "default": "./dist/domains/workspace-members.js"
+    },
+    "./domains/workspaces": {
+      "types": "./dist/domains/workspaces.d.ts",
+      "default": "./dist/domains/workspaces.js"
+    },
+    "./domains/files": {
+      "types": "./dist/domains/files.d.ts",
+      "default": "./dist/domains/files.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@contextbase/contracts": "workspace:*",
+    "effect": "3.19.6"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

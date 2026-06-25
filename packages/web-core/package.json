@@ -1,0 +1,33 @@
+{
+  "name": "@contextbase/web-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./generators/cinematic-portraits/source-brief": {
+      "types": "./dist/generators/cinematic-portraits/source-brief.d.ts",
+      "default": "./dist/generators/cinematic-portraits/source-brief.js"
+    },
+    "./generators/providers": {
+      "types": "./dist/generators/providers/index.d.ts",
+      "default": "./dist/generators/providers/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "effect": "3.19.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

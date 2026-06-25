@@ -1,0 +1,60 @@
+export const workspaceSettingsNavigation = [
+  {
+    adminOnly: false,
+    href: "/app/$workspaceSlug/settings/account/profile",
+    icon: "user",
+    label: "Profile",
+    mobileLabel: "Profile",
+    section: "Account",
+  },
+  {
+    adminOnly: false,
+    href: "/app/$workspaceSlug/settings/account/security",
+    icon: "lock-keyhole-open",
+    label: "Security",
+    mobileLabel: "Security",
+    section: "Account",
+  },
+  {
+    adminOnly: false,
+    href: "/app/$workspaceSlug/settings/workspace/general",
+    icon: "building-2",
+    label: "General",
+    mobileLabel: "Workspace",
+    section: "Workspace",
+  },
+  {
+    adminOnly: true,
+    href: "/app/$workspaceSlug/settings/workspace/members",
+    icon: "users",
+    label: "Members",
+    mobileLabel: "Members",
+    section: "Workspace",
+  },
+  {
+    adminOnly: true,
+    href: "/app/$workspaceSlug/settings/developers/api",
+    icon: "code-xml",
+    label: "API",
+    mobileLabel: "API",
+    section: "Developers",
+  },
+  {
+    adminOnly: true,
+    href: "/app/$workspaceSlug/settings/developers/mcp",
+    icon: "plug",
+    label: "MCP",
+    mobileLabel: "MCP",
+    section: "Developers",
+  },
+  {
+    adminOnly: true,
+    href: "/app/$workspaceSlug/settings/developers/cli",
+    icon: "terminal",
+    label: "CLI",
+    mobileLabel: "CLI",
+    section: "Developers",
+  },
+] as const
+
+export const workspaceSettingsSections = ["Account", "Workspace", "Developers"] as const

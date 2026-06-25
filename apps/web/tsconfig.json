@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": false,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "noUncheckedIndexedAccess": false,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@contextbase/core": ["../../packages/core/src/index.ts"],
+      "@contextbase/core/*": ["../../packages/core/src/*"],
+      "@contextbase/zero-schema": ["../../packages/zero-schema/src/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "vite.server-api.config.ts"]
+}

@@ -1,0 +1,13 @@
+.git
+.gstack
+.turbo
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+dist
+apps/*/dist
+packages/*/dist
+.wrangler
+coverage
+test-results
+playwright-report

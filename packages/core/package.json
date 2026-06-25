@@ -1,0 +1,195 @@
+{
+  "name": "@contextbase/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./db/schema": {
+      "types": "./dist/db/schema.d.ts",
+      "default": "./dist/db/schema.js"
+    },
+    "./db/client": {
+      "types": "./dist/db/client.d.ts",
+      "default": "./dist/db/client.js"
+    },
+    "./domains/auth/authenticate": {
+      "types": "./dist/domains/auth/authenticate.d.ts",
+      "default": "./dist/domains/auth/authenticate.js"
+    },
+    "./domains/auth/api-token-repository": {
+      "types": "./dist/domains/auth/api-token-repository.d.ts",
+      "default": "./dist/domains/auth/api-token-repository.js"
+    },
+    "./domains/auth/api-tokens": {
+      "types": "./dist/domains/auth/api-tokens.d.ts",
+      "default": "./dist/domains/auth/api-tokens.js"
+    },
+    "./domains/auth/browser-session": {
+      "types": "./dist/domains/auth/browser-session.d.ts",
+      "default": "./dist/domains/auth/browser-session.js"
+    },
+    "./domains/auth/browser-session-permissions": {
+      "types": "./dist/domains/auth/browser-session-permissions.d.ts",
+      "default": "./dist/domains/auth/browser-session-permissions.js"
+    },
+    "./domains/auth/browser-session-repository": {
+      "types": "./dist/domains/auth/browser-session-repository.d.ts",
+      "default": "./dist/domains/auth/browser-session-repository.js"
+    },
+    "./domains/auth/bootstrap": {
+      "types": "./dist/domains/auth/bootstrap.d.ts",
+      "default": "./dist/domains/auth/bootstrap.js"
+    },
+    "./domains/auth/schema": {
+      "types": "./dist/domains/auth/schema.d.ts",
+      "default": "./dist/domains/auth/schema.js"
+    },
+    "./domains/feature-flags/repository": {
+      "types": "./dist/domains/feature-flags/repository.d.ts",
+      "default": "./dist/domains/feature-flags/repository.js"
+    },
+    "./domains/feature-flags/schema": {
+      "types": "./dist/domains/feature-flags/schema.d.ts",
+      "default": "./dist/domains/feature-flags/schema.js"
+    },
+    "./domains/feature-flags/service": {
+      "types": "./dist/domains/feature-flags/service.d.ts",
+      "default": "./dist/domains/feature-flags/service.js"
+    },
+    "./domains/invitations/repository": {
+      "types": "./dist/domains/invitations/repository.d.ts",
+      "default": "./dist/domains/invitations/repository.js"
+    },
+    "./domains/invitations/schema": {
+      "types": "./dist/domains/invitations/schema.d.ts",
+      "default": "./dist/domains/invitations/schema.js"
+    },
+    "./domains/invitations/service": {
+      "types": "./dist/domains/invitations/service.d.ts",
+      "default": "./dist/domains/invitations/service.js"
+    },
+    "./domains/signup/repository": {
+      "types": "./dist/domains/signup/repository.d.ts",
+      "default": "./dist/domains/signup/repository.js"
+    },
+    "./domains/signup/schema": {
+      "types": "./dist/domains/signup/schema.d.ts",
+      "default": "./dist/domains/signup/schema.js"
+    },
+    "./domains/signup/service": {
+      "types": "./dist/domains/signup/service.d.ts",
+      "default": "./dist/domains/signup/service.js"
+    },
+    "./domains/users/contracts": {
+      "types": "./dist/domains/users/contracts.d.ts",
+      "default": "./dist/domains/users/contracts.js"
+    },
+    "./domains/users/repository": {
+      "types": "./dist/domains/users/repository.d.ts",
+      "default": "./dist/domains/users/repository.js"
+    },
+    "./domains/users/service": {
+      "types": "./dist/domains/users/service.d.ts",
+      "default": "./dist/domains/users/service.js"
+    },
+    "./domains/workspace-members/contracts": {
+      "types": "./dist/domains/workspace-members/contracts.d.ts",
+      "default": "./dist/domains/workspace-members/contracts.js"
+    },
+    "./domains/workspace-members/repository": {
+      "types": "./dist/domains/workspace-members/repository.d.ts",
+      "default": "./dist/domains/workspace-members/repository.js"
+    },
+    "./domains/workspace-members/service": {
+      "types": "./dist/domains/workspace-members/service.d.ts",
+      "default": "./dist/domains/workspace-members/service.js"
+    },
+    "./domains/workspaces/contracts": {
+      "types": "./dist/domains/workspaces/contracts.d.ts",
+      "default": "./dist/domains/workspaces/contracts.js"
+    },
+    "./domains/workspaces/repository": {
+      "types": "./dist/domains/workspaces/repository.d.ts",
+      "default": "./dist/domains/workspaces/repository.js"
+    },
+    "./domains/workspaces/service": {
+      "types": "./dist/domains/workspaces/service.d.ts",
+      "default": "./dist/domains/workspaces/service.js"
+    },
+    "./shared/errors": {
+      "types": "./dist/shared/errors.d.ts",
+      "default": "./dist/shared/errors.js"
+    },
+    "./shared/ids": {
+      "types": "./dist/shared/ids.d.ts",
+      "default": "./dist/shared/ids.js"
+    },
+    "./shared/response": {
+      "types": "./dist/shared/response.d.ts",
+      "default": "./dist/shared/response.js"
+    },
+    "./domains/files/storage": {
+      "types": "./dist/domains/files/storage.d.ts",
+      "default": "./dist/domains/files/storage.js"
+    },
+    "./domains/files/storage-s3": {
+      "types": "./dist/domains/files/storage-s3.d.ts",
+      "default": "./dist/domains/files/storage-s3.js"
+    },
+    "./domains/files/schema": {
+      "types": "./dist/domains/files/schema.d.ts",
+      "default": "./dist/domains/files/schema.js"
+    },
+    "./domains/files/repository": {
+      "types": "./dist/domains/files/repository.d.ts",
+      "default": "./dist/domains/files/repository.js"
+    },
+    "./domains/files/service": {
+      "types": "./dist/domains/files/service.d.ts",
+      "default": "./dist/domains/files/service.js"
+    },
+    "./domains/oauth/repository": {
+      "types": "./dist/domains/oauth/repository.d.ts",
+      "default": "./dist/domains/oauth/repository.js"
+    },
+    "./domains/oauth/clients": {
+      "types": "./dist/domains/oauth/clients.d.ts",
+      "default": "./dist/domains/oauth/clients.js"
+    },
+    "./domains/oauth/grants": {
+      "types": "./dist/domains/oauth/grants.d.ts",
+      "default": "./dist/domains/oauth/grants.js"
+    },
+    "./domains/oauth/schema": {
+      "types": "./dist/domains/oauth/schema.d.ts",
+      "default": "./dist/domains/oauth/schema.js"
+    },
+    "./domains/oauth/service": {
+      "types": "./dist/domains/oauth/service.d.ts",
+      "default": "./dist/domains/oauth/service.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1049.0",
+    "@paralleldrive/cuid2": "2.2.2",
+    "drizzle-orm": "0.44.7",
+    "effect": "3.19.6",
+    "postgres": "3.4.9",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "drizzle-kit": "0.31.10",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@contextbase/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "contextbase": "./dist/index.js"
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @contextbase/contracts build && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/api-client build",
+    "build": "tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "pretest": "pnpm --filter @contextbase/contracts build && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/api-client build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@commander-js/extra-typings": "^14.0.0",
+    "@contextbase/api-client": "workspace:*",
+    "@contextbase/contracts": "workspace:*",
+    "@contextbase/core": "workspace:*",
+    "commander": "^14.0.3",
+    "effect": "3.19.6"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

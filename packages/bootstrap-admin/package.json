@@ -1,0 +1,26 @@
+{
+  "name": "@contextbase/bootstrap-admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "contextbase-bootstrap-admin": "./dist/index.js"
+  },
+  "scripts": {
+    "bootstrap": "tsx src/index.ts bootstrap",
+    "build": "tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@contextbase/core": "workspace:*",
+    "dotenv": "^17.4.2",
+    "effect": "3.19.6"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

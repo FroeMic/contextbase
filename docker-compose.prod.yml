@@ -1,0 +1,158 @@
+x-contextbase-image: &contextbase-image
+  image: contextbase-runtime
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      VITE_ZERO_CACHE_URL: ${VITE_ZERO_CACHE_URL:-https://zero.contextbase.localhost}
+
+x-database-url: &database-url postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+
+services:
+  postgres:
+    image: postgres:17
+    command:
+      [
+        "postgres",
+        "-c",
+        "wal_level=logical",
+        "-c",
+        "max_wal_senders=10",
+        "-c",
+        "max_replication_slots=10",
+      ]
+    environment:
+      POSTGRES_DB: contextbase
+      POSTGRES_USER: contextbase
+      POSTGRES_PASSWORD: contextbase_dev_only
+    ports:
+      - "5417:5432"
+    volumes:
+      - contextbase_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contextbase -d contextbase"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    <<: *contextbase-image
+    command: ["sh", "-c", "node scripts/migrate.mjs && node scripts/verify-zero-publication.mjs"]
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *contextbase-image
+    command: ["node", "apps/api/dist/server.js"]
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: 3017
+      DATABASE_URL: *database-url
+      NODE_ENV: production
+      CONTEXTBASE_APP_BASE_URL: ${CONTEXTBASE_APP_BASE_URL:-https://contextbase.localhost}
+      CONTEXTBASE_API_PUBLIC_BASE_URL: ${CONTEXTBASE_API_PUBLIC_BASE_URL:-https://api.contextbase.localhost}
+      CONTEXTBASE_PUBLIC_ASSETS_BASE_URL: ${CONTEXTBASE_PUBLIC_ASSETS_BASE_URL:-https://contextbase.localhost/public}
+      CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL: ${CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL:-https://uploads.contextbase.localhost}
+      CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL: ${CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL:-http://web:4017/api/files}
+      CONTEXTBASE_STORAGE_PROVIDER: ${CONTEXTBASE_STORAGE_PROVIDER:-local_disk}
+      CONTEXTBASE_STORAGE_LOCAL_DIR: ${CONTEXTBASE_STORAGE_LOCAL_DIR:-/data/uploads}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - contextbase_uploads:/data/uploads
+    ports:
+      - "3017:3017"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3017/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  web:
+    <<: *contextbase-image
+    command: ["node", "apps/web/server.mjs"]
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4017
+      DATABASE_URL: *database-url
+      NODE_ENV: production
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-.contextbase.localhost}
+      AGENTMAIL_API_KEY: ${AGENTMAIL_API_KEY:-}
+      AGENTMAIL_FROM_NAME: ${AGENTMAIL_FROM_NAME:-Contextbase}
+      AGENTMAIL_INBOX_ID: ${AGENTMAIL_INBOX_ID:-}
+      POSTHOG_ASSET_PROXY_TARGET: ${POSTHOG_ASSET_PROXY_TARGET:-https://eu-assets.i.posthog.com}
+      POSTHOG_ENABLED: ${POSTHOG_ENABLED:-false}
+      POSTHOG_HOST: ${POSTHOG_HOST:-/ingest}
+      POSTHOG_PROXY_TARGET: ${POSTHOG_PROXY_TARGET:-https://eu.i.posthog.com}
+      POSTHOG_TOKEN: ${POSTHOG_TOKEN:-}
+      WEB_AUTH_RATE_LIMIT_MAX: ${WEB_AUTH_RATE_LIMIT_MAX:-20}
+      WEB_AUTH_RATE_LIMIT_WINDOW_MS: ${WEB_AUTH_RATE_LIMIT_WINDOW_MS:-60000}
+      WEB_MAX_JSON_BODY_BYTES: ${WEB_MAX_JSON_BODY_BYTES:-262144}
+      WAITLIST_NOTIFICATION_RECIPIENTS: ${WAITLIST_NOTIFICATION_RECIPIENTS:-}
+      VITE_ZERO_CACHE_URL: ${VITE_ZERO_CACHE_URL:-https://zero.contextbase.localhost}
+      CONTEXTBASE_PUBLIC_ASSETS_BASE_URL: ${CONTEXTBASE_PUBLIC_ASSETS_BASE_URL:-https://contextbase.localhost/public}
+      CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL: ${CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL:-https://uploads.contextbase.localhost}
+      CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL: ${CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL:-http://web:4017/api/files}
+      CONTEXTBASE_STORAGE_PROVIDER: ${CONTEXTBASE_STORAGE_PROVIDER:-local_disk}
+      CONTEXTBASE_STORAGE_LOCAL_DIR: ${CONTEXTBASE_STORAGE_LOCAL_DIR:-/data/uploads}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "4017:4017"
+    volumes:
+      - contextbase_uploads:/data/uploads
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:4017/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  zero-cache:
+    <<: *contextbase-image
+    command: ["pnpm", "--filter", "@contextbase/web", "exec", "zero-cache"]
+    environment:
+      ZERO_ADMIN_PASSWORD: ${ZERO_ADMIN_PASSWORD:-contextbase_dev_only}
+      ZERO_APP_ID: contextbase
+      ZERO_CHANGE_DB: *database-url
+      ZERO_CVR_DB: *database-url
+      ZERO_MUTATE_FORWARD_COOKIES: "true"
+      ZERO_MUTATE_URL: https://contextbase.localhost/api/zero/mutate
+      ZERO_PORT: 4848
+      ZERO_QUERY_FORWARD_COOKIES: "true"
+      ZERO_QUERY_URL: https://contextbase.localhost/api/zero/query
+      ZERO_REPLICA_FILE: /data/replica.db
+      ZERO_UPSTREAM_DB: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    ports:
+      - "4817:4848"
+    volumes:
+      - contextbase_zero_data:/data
+    restart: unless-stopped
+
+volumes:
+  contextbase_postgres_data:
+  contextbase_zero_data:
+  contextbase_uploads:

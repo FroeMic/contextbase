@@ -1,0 +1,57 @@
+{
+  "name": "contextbase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.20.0",
+  "scripts": {
+    "dev": "pnpm --filter @contextbase/web dev",
+    "build": "pnpm -r build",
+    "bootstrap": "tsx packages/bootstrap-admin/src/index.ts bootstrap",
+    "db:generate": "drizzle-kit generate --config packages/core/drizzle.config.ts",
+    "db:migrate": "node scripts/migrate.mjs",
+    "docker:local:dev": "docker compose up -d --build",
+    "dev:api": "pnpm --filter @contextbase/api dev",
+    "dev:auth": "pnpm --filter @contextbase/auth dev",
+    "dev:mcp": "pnpm --filter @contextbase/mcp dev",
+    "dev:web": "pnpm --filter @contextbase/web dev",
+    "deploy:webstack": "node scripts/deploy-webstack.mjs",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm --filter @contextbase/contracts build && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/zero-schema build && pnpm --filter @contextbase/api-client build && pnpm --filter @contextbase/web-core build && pnpm -r typecheck",
+    "local:domains:docker": "pnpm local:domains:docker:2",
+    "local:domains:docker:1": "POSTGRES_HOST_PORT=5517 API_HOST_PORT=3117 WEB_HOST_PORT=4117 ZERO_HOST_PORT=4917 AUTH_HOST_PORT=3417 MCP_HOST_PORT=3517 LOCAL_DOMAINS_CADDY_PORT=8117 LOCAL_AUTH_BASE_URL=https://contextbase-1.test LOCAL_API_BASE_URL=https://api.contextbase-1.test LOCAL_API_RESOURCE_URL=https://api.contextbase-1.test/api/v1 LOCAL_MCP_BASE_URL=https://contextbase-1.test LOCAL_APP_BASE_URL=https://contextbase-1.test LOCAL_PUBLIC_ASSETS_BASE_URL=https://contextbase-1.test/public LOCAL_UPLOADS_BASE_URL=https://uploads.contextbase-1.test LOCAL_ZERO_BASE_URL=https://zero.contextbase-1.test LOCAL_AUTH_COOKIE_DOMAIN=.contextbase-1.test LOCAL_WEB_ALLOWED_HOSTS=contextbase-1.test,uploads.contextbase-1.test LOCAL_APP_HOST=contextbase-1.test LOCAL_API_HOST=api.contextbase-1.test LOCAL_UPLOADS_HOST=uploads.contextbase-1.test LOCAL_ZERO_HOST=zero.contextbase-1.test LOCAL_CONSOLE_HOST=console.contextbase-1.test docker compose -p contextbase-1 -f docker-compose.yml -f docker-compose.local-domains.yml up -d --build postgres migrate api web auth mcp zero-cache caddy-local",
+    "local:domains:docker:2": "POSTGRES_HOST_PORT=5417 API_HOST_PORT=3017 WEB_HOST_PORT=4017 ZERO_HOST_PORT=4817 AUTH_HOST_PORT=3317 MCP_HOST_PORT=3217 LOCAL_DOMAINS_CADDY_PORT=8217 LOCAL_AUTH_BASE_URL=https://contextbase-2.test LOCAL_API_BASE_URL=https://api.contextbase-2.test LOCAL_API_RESOURCE_URL=https://api.contextbase-2.test/api/v1 LOCAL_MCP_BASE_URL=https://contextbase-2.test LOCAL_APP_BASE_URL=https://contextbase-2.test LOCAL_PUBLIC_ASSETS_BASE_URL=https://contextbase-2.test/public LOCAL_UPLOADS_BASE_URL=https://uploads.contextbase-2.test LOCAL_ZERO_BASE_URL=https://zero.contextbase-2.test LOCAL_AUTH_COOKIE_DOMAIN=.contextbase-2.test LOCAL_WEB_ALLOWED_HOSTS=contextbase-2.test,uploads.contextbase-2.test LOCAL_APP_HOST=contextbase-2.test LOCAL_API_HOST=api.contextbase-2.test LOCAL_UPLOADS_HOST=uploads.contextbase-2.test LOCAL_ZERO_HOST=zero.contextbase-2.test LOCAL_CONSOLE_HOST=console.contextbase-2.test docker compose -p contextbase-2 -f docker-compose.yml -f docker-compose.local-domains.yml up -d --build postgres migrate api web auth mcp zero-cache caddy-local",
+    "local:domains:docker:down": "pnpm local:domains:docker:down:2",
+    "local:domains:docker:down:1": "POSTGRES_HOST_PORT=5517 API_HOST_PORT=3117 WEB_HOST_PORT=4117 ZERO_HOST_PORT=4917 AUTH_HOST_PORT=3417 MCP_HOST_PORT=3517 LOCAL_DOMAINS_CADDY_PORT=8117 docker compose -p contextbase-1 -f docker-compose.yml -f docker-compose.local-domains.yml down",
+    "local:domains:docker:down:2": "POSTGRES_HOST_PORT=5417 API_HOST_PORT=3017 WEB_HOST_PORT=4017 ZERO_HOST_PORT=4817 AUTH_HOST_PORT=3317 MCP_HOST_PORT=3217 LOCAL_DOMAINS_CADDY_PORT=8217 docker compose -p contextbase-2 -f docker-compose.yml -f docker-compose.local-domains.yml down",
+    "local:domains:portless:up": "node scripts/local-domains-portless.mjs up",
+    "local:domains:portless:up:unprivileged": "PORTLESS_PORT=1355 node scripts/local-domains-portless.mjs up",
+    "local:domains:portless:down": "node scripts/local-domains-portless.mjs down",
+    "smoke:local": "node scripts/smoke-local.mjs",
+    "prod:verify": "node scripts/verify-production-deploy.mjs"
+  },
+  "dependencies": {
+    "@contextbase/web-core": "workspace:*",
+    "drizzle-orm": "0.44.7",
+    "effect": "3.19.6",
+    "openai": "^6.42.0",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^24.10.1",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "0.31.10",
+    "tsx": "4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@rocicorp/zero-sqlite3"
+    ]
+  }
+}

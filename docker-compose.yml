@@ -1,0 +1,288 @@
+services:
+  postgres:
+    image: postgres:17
+    command:
+      [
+        "postgres",
+        "-c",
+        "wal_level=logical",
+        "-c",
+        "max_wal_senders=10",
+        "-c",
+        "max_replication_slots=10",
+      ]
+    environment:
+      POSTGRES_DB: contextbase
+      POSTGRES_USER: contextbase
+      POSTGRES_PASSWORD: contextbase_dev_only
+    ports:
+      - "${POSTGRES_HOST_PORT:-5417}:5432"
+    volumes:
+      - contextbase_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contextbase -d contextbase"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm db:migrate"
+    environment:
+      DATABASE_URL: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_api_node_modules:/app/apps/api/node_modules
+      - contextbase_cli_node_modules:/app/apps/cli/node_modules
+      - contextbase_client_node_modules:/app/packages/api-client/node_modules
+      - contextbase_core_node_modules:/app/packages/core/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/auth dev"
+    environment:
+      AUTH_HOST: 0.0.0.0
+      AUTH_PORT: 3317
+      AUTH_PUBLIC_BASE_URL: http://127.0.0.1:3317
+      CONTEXTBASE_API_RESOURCE_URL: http://127.0.0.1:3017/api/v1
+      CONTEXTBASE_MCP_RESOURCE_URL: http://127.0.0.1:3217/mcp
+      CONTEXTBASE_WEB_BASE_URL: http://127.0.0.1:4017
+      DATABASE_URL: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${AUTH_HOST_PORT:-3317}:3317"
+    volumes:
+      - .:/app
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_auth_node_modules:/app/apps/auth/node_modules
+      - contextbase_core_node_modules:/app/packages/core/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3317/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/mcp dev"
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 3217
+      MCP_PUBLIC_BASE_URL: http://127.0.0.1:3217
+      CONTEXTBASE_AUTH_BASE_URL: http://127.0.0.1:3317
+      DATABASE_URL: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${MCP_HOST_PORT:-3217}:3217"
+    volumes:
+      - .:/app
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_mcp_node_modules:/app/apps/mcp/node_modules
+      - contextbase_core_node_modules:/app/packages/core/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3217/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/api dev"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=3017
+      - DATABASE_URL=postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+      - CONTEXTBASE_API_RESOURCE_URL=${CONTEXTBASE_API_RESOURCE_URL:-http://127.0.0.1:3017/api/v1}
+      - POSTHOG_ENABLED=${POSTHOG_ENABLED:-false}
+      - POSTHOG_ENVIRONMENT=${POSTHOG_ENVIRONMENT:-production}
+      - POSTHOG_FLUSH_TIMEOUT_MS=${POSTHOG_FLUSH_TIMEOUT_MS:-500}
+      - POSTHOG_SERVER_HOST=${POSTHOG_SERVER_HOST:-https://eu.i.posthog.com}
+      - POSTHOG_SERVICE_VERSION=${POSTHOG_SERVICE_VERSION:-}
+      - POSTHOG_TOKEN=${POSTHOG_TOKEN:-}
+      - CONTEXTBASE_PUBLIC_ASSETS_BASE_URL=${CONTEXTBASE_PUBLIC_ASSETS_BASE_URL:-http://127.0.0.1:4017/public}
+      - CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL=${CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL:-http://127.0.0.1:4017/api/files}
+      - CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL=${CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL:-http://web:4017/api/files}
+      - CONTEXTBASE_STORAGE_LOCAL_DIR=${CONTEXTBASE_STORAGE_LOCAL_DIR:-/data/uploads}
+      - CONTEXTBASE_STORAGE_PROVIDER=${CONTEXTBASE_STORAGE_PROVIDER:-local_disk}
+      - CONTEXTBASE_STORAGE_S3_BUCKET=${CONTEXTBASE_STORAGE_S3_BUCKET:-}
+      - CONTEXTBASE_STORAGE_S3_ENDPOINT=${CONTEXTBASE_STORAGE_S3_ENDPOINT:-}
+      - CONTEXTBASE_STORAGE_S3_FORCE_PATH_STYLE=${CONTEXTBASE_STORAGE_S3_FORCE_PATH_STYLE:-false}
+      - CONTEXTBASE_STORAGE_S3_PREFIX=${CONTEXTBASE_STORAGE_S3_PREFIX:-}
+      - CONTEXTBASE_STORAGE_S3_REGION=${CONTEXTBASE_STORAGE_S3_REGION:-}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${API_HOST_PORT:-3017}:3017"
+    volumes:
+      - .:/app
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_api_node_modules:/app/apps/api/node_modules
+      - contextbase_cli_node_modules:/app/apps/cli/node_modules
+      - contextbase_client_node_modules:/app/packages/api-client/node_modules
+      - contextbase_core_node_modules:/app/packages/core/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+      - contextbase_uploads:/data/uploads
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3017/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm --filter @contextbase/core build && pnpm --filter @contextbase/web dev"
+    environment:
+      - AGENTMAIL_API_KEY=${AGENTMAIL_API_KEY:-}
+      - AGENTMAIL_FROM_NAME=${AGENTMAIL_FROM_NAME:-Contextbase}
+      - AGENTMAIL_INBOX_ID=${AGENTMAIL_INBOX_ID:-}
+      - AUTH_COOKIE_DOMAIN=${AUTH_COOKIE_DOMAIN:-}
+      - DATABASE_URL=postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+      - POSTHOG_ASSET_PROXY_TARGET=${POSTHOG_ASSET_PROXY_TARGET:-https://eu-assets.i.posthog.com}
+      - POSTHOG_BROWSER_HOST=${POSTHOG_BROWSER_HOST:-/ingest}
+      - POSTHOG_ENABLED=${POSTHOG_ENABLED:-false}
+      - POSTHOG_ENVIRONMENT=${POSTHOG_ENVIRONMENT:-production}
+      - POSTHOG_HOST=${POSTHOG_HOST:-/ingest}
+      - POSTHOG_PROXY_TARGET=${POSTHOG_PROXY_TARGET:-https://eu.i.posthog.com}
+      - POSTHOG_SERVICE_VERSION=${POSTHOG_SERVICE_VERSION:-}
+      - POSTHOG_TOKEN=${POSTHOG_TOKEN:-}
+      - CONTEXTBASE_PUBLIC_ASSETS_BASE_URL=${CONTEXTBASE_PUBLIC_ASSETS_BASE_URL:-http://127.0.0.1:4017/public}
+      - CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL=${CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL:-http://127.0.0.1:4017/api/files}
+      - CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL=${CONTEXTBASE_UPLOADS_INTERNAL_BASE_URL:-http://web:4017/api/files}
+      - CONTEXTBASE_STORAGE_LOCAL_DIR=${CONTEXTBASE_STORAGE_LOCAL_DIR:-/data/uploads}
+      - CONTEXTBASE_STORAGE_PROVIDER=${CONTEXTBASE_STORAGE_PROVIDER:-local_disk}
+      - CONTEXTBASE_STORAGE_S3_BUCKET=${CONTEXTBASE_STORAGE_S3_BUCKET:-}
+      - CONTEXTBASE_STORAGE_S3_ENDPOINT=${CONTEXTBASE_STORAGE_S3_ENDPOINT:-}
+      - CONTEXTBASE_STORAGE_S3_FORCE_PATH_STYLE=${CONTEXTBASE_STORAGE_S3_FORCE_PATH_STYLE:-false}
+      - CONTEXTBASE_STORAGE_S3_PREFIX=${CONTEXTBASE_STORAGE_S3_PREFIX:-}
+      - CONTEXTBASE_STORAGE_S3_REGION=${CONTEXTBASE_STORAGE_S3_REGION:-}
+      - VITE_ZERO_CACHE_URL=${VITE_ZERO_CACHE_URL:-}
+      - WEB_AUTH_RATE_LIMIT_MAX=${WEB_AUTH_RATE_LIMIT_MAX:-20}
+      - WEB_AUTH_RATE_LIMIT_WINDOW_MS=${WEB_AUTH_RATE_LIMIT_WINDOW_MS:-60000}
+      - WEB_MAX_JSON_BODY_BYTES=${WEB_MAX_JSON_BODY_BYTES:-262144}
+      - WAITLIST_NOTIFICATION_RECIPIENTS=${WAITLIST_NOTIFICATION_RECIPIENTS:-}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "${WEB_HOST_PORT:-4017}:4017"
+    volumes:
+      - .:/app
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_api_node_modules:/app/apps/api/node_modules
+      - contextbase_cli_node_modules:/app/apps/cli/node_modules
+      - contextbase_web_node_modules:/app/apps/web/node_modules
+      - contextbase_client_node_modules:/app/packages/api-client/node_modules
+      - contextbase_core_node_modules:/app/packages/core/node_modules
+      - contextbase_zero_schema_node_modules:/app/packages/zero-schema/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+      - contextbase_uploads:/data/uploads
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:4017/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  zero-cache:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    command: sh -c "pnpm install --frozen-lockfile=false && pnpm --filter @contextbase/web exec zero-cache"
+    environment:
+      ZERO_ADMIN_PASSWORD: ${ZERO_ADMIN_PASSWORD:-contextbase_zero_dev_only}
+      ZERO_APP_ID: contextbase
+      ZERO_CHANGE_DB: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+      ZERO_CVR_DB: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+      ZERO_MUTATE_FORWARD_COOKIES: "true"
+      ZERO_MUTATE_URL: http://web:4017/api/zero/mutate
+      ZERO_PORT: 4848
+      ZERO_QUERY_FORWARD_COOKIES: "true"
+      ZERO_QUERY_URL: http://web:4017/api/zero/query
+      ZERO_REPLICA_FILE: /data/replica.db
+      ZERO_UPSTREAM_DB: postgres://contextbase:contextbase_dev_only@postgres:5432/contextbase
+    depends_on:
+      postgres:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    ports:
+      - "${ZERO_HOST_PORT:-4817}:4848"
+    volumes:
+      - .:/app
+      - contextbase_zero_data:/data
+      - contextbase_node_modules:/app/node_modules
+      - contextbase_web_node_modules:/app/apps/web/node_modules
+      - contextbase_zero_schema_node_modules:/app/packages/zero-schema/node_modules
+      - contextbase_pnpm_store:/app/.pnpm-store
+    restart: unless-stopped
+
+volumes:
+  contextbase_auth_node_modules:
+  contextbase_api_node_modules:
+  contextbase_cli_node_modules:
+  contextbase_client_node_modules:
+  contextbase_core_node_modules:
+  contextbase_mcp_node_modules:
+  contextbase_node_modules:
+  contextbase_pnpm_store:
+  contextbase_postgres_data:
+  contextbase_uploads:
+  contextbase_web_node_modules:
+  contextbase_zero_data:
+  contextbase_zero_schema_node_modules:

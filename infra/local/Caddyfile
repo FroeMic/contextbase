@@ -1,0 +1,63 @@
+:8117 {
+	encode zstd gzip
+
+	@app {
+		header X-Forwarded-Host {$LOCAL_APP_HOST:contextbase-2.test}*
+	}
+	handle @app {
+		handle /mcp* {
+			reverse_proxy mcp:3217
+		}
+
+		handle /.well-known/oauth* {
+			reverse_proxy auth:3317
+		}
+
+		handle /oauth* {
+			reverse_proxy auth:3317
+		}
+
+		handle {
+			reverse_proxy web:4017 {
+				header_up Host {http.request.header.X-Forwarded-Host}
+				header_up X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+				header_up X-Forwarded-Proto https
+			}
+		}
+	}
+
+	@api {
+		header X-Forwarded-Host {$LOCAL_API_HOST:api.contextbase-2.test}*
+	}
+	handle @api {
+		reverse_proxy api:3017 {
+			header_up Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	@uploads {
+		header X-Forwarded-Host {$LOCAL_UPLOADS_HOST:uploads.contextbase-2.test}*
+	}
+	handle @uploads {
+		reverse_proxy web:4017 {
+			header_up Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	@zero {
+		header X-Forwarded-Host {$LOCAL_ZERO_HOST:zero.contextbase-2.test}*
+	}
+	handle @zero {
+		reverse_proxy zero-cache:4848 {
+			header_up Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	respond "Unknown local Contextbase domain" 404
+}

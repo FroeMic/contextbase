@@ -1,0 +1,7 @@
+FROM node:22-alpine
+
+RUN apk add --no-cache g++ make python3 readline-dev
+
+RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
+
+WORKDIR /app

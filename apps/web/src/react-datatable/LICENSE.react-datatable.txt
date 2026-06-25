@@ -1,0 +1,44 @@
+COMMUNITY SOFTWARE LICENSE AGREEMENT
+
+Copyright (c) react-datatable
+
+License ID: 422da48f-218a-4425-82b2-244b50f968bc
+Licensed entity: Michael Froehlich
+License type: Individual
+Product: react-datatable
+Terms Version: 2026-05-08
+Effective Date: May 10, 2026
+
+Licensor grants Licensee a limited, non-exclusive, non-transferable, revocable license to:
+
+- Use the Software only in non-commercial projects;
+- Modify the Software for those non-commercial projects; and
+- Bundle and distribute the Software only as part of compiled production builds for those non-commercial projects.
+
+This community license may be revoked by Licensor at any time, with or without cause, and without prior notice. Upon revocation, Licensee must cease use of the Software and remove the Software from all internal or external products, repositories, systems, and distributions within ninety (90) days.
+
+RESTRICTIONS
+
+Licensee may not:
+
+- Redistribute, publish, or share the Software source code, in whole or in part;
+- Include the Software in any open-source project, public code repository, or package registry;
+- Transfer the license or provide the Software to another company, client, or third party except as allowed in compiled production builds;
+- Sublicense, resell, rent, lease, or otherwise provide the Software source to third parties; or
+- Use the Software to create a competing datatable product, component library, starter, or template for redistribution.
+
+OWNERSHIP
+
+The Software is licensed, not sold. All rights, title, and interest in the Software remain with Licensor. No rights are granted other than those expressly stated in this Agreement.
+
+TERMINATION
+
+If Licensee breaches any term of this Agreement, including by using the Software outside the licensed scope or providing the Software to an unlicensed company or third party, the license terminates automatically and immediately. Upon termination, Licensee must stop using the Software and delete all source copies of the Software in its possession or control. Licensor reserves all rights and remedies available under applicable law.
+
+NO WARRANTY
+
+The Software is provided "as is", without warranties of any kind, express or implied, including but not limited to merchantability, fitness for a particular purpose, and non-infringement. Licensor shall not be liable for any damages arising from the use of, or inability to use, the Software.
+
+SUPPORT
+
+Unless explicitly stated at the time of license issuance, this license does not include guaranteed support, maintenance, bug fixes, or future updates. Any support, upgrade, or custom terms follow the specific order, invoice, or written agreement tied to this license.

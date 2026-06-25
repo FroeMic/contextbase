@@ -1,0 +1,497 @@
+/* biome-ignore-all lint/suspicious/noUnknownAtRules: Tailwind v4 directives are handled by the Tailwind Vite plugin. */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+@import "../react-datatable/styles/datatable.css";
+@source "../react-datatable";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Inter Variable", Arial, Helvetica, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light;
+  --background: oklch(0.99913 0.001 286.38);
+  --surface-subtle: oklch(0.99913 0.001 286.38);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.837 0.128 66.29);
+  --chart-2: oklch(0.705 0.213 47.604);
+  --chart-3: oklch(0.646 0.222 41.116);
+  --chart-4: oklch(0.553 0.195 38.402);
+  --chart-5: oklch(0.47 0.157 37.304);
+  --radius: 0.45rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --surface-subtle: oklch(0.18 0.006 285);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.837 0.128 66.29);
+  --chart-2: oklch(0.705 0.213 47.604);
+  --chart-3: oklch(0.646 0.222 41.116);
+  --chart-4: oklch(0.553 0.195 38.402);
+  --chart-5: oklch(0.47 0.157 37.304);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: gray transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+  }
+
+  html {
+    @apply font-sans;
+    background-color: var(--background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  .markdown-content {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .markdown-content :where(p) {
+    margin-block: 0.55rem;
+  }
+
+  .markdown-content :where(h1, h2, h3) {
+    color: var(--foreground);
+    font-weight: 650;
+    line-height: 1.25;
+    margin-block: 1.2rem 0.6rem;
+  }
+
+  .markdown-content :where(h1) {
+    font-size: 1.55rem;
+  }
+
+  .markdown-content :where(h2) {
+    font-size: 1.28rem;
+  }
+
+  .markdown-content :where(h3) {
+    font-size: 1.08rem;
+  }
+
+  .markdown-content :where(ul, ol) {
+    margin-block: 0.55rem;
+    padding-inline-start: 1.45rem;
+  }
+
+  .markdown-content :where(ul) {
+    list-style: disc;
+  }
+
+  .markdown-content :where(ol) {
+    list-style: decimal;
+  }
+
+  .markdown-content :where(li) {
+    margin-block: 0.15rem;
+  }
+
+  .markdown-content :where(a) {
+    color: var(--primary);
+    text-decoration-line: underline;
+    text-underline-offset: 3px;
+  }
+
+  .markdown-content :where(s) {
+    color: var(--muted-foreground);
+  }
+
+  .markdown-content :where(code) {
+    border-radius: 0.25rem;
+    background: color-mix(in oklab, var(--muted) 78%, transparent);
+    color: var(--foreground);
+    font-family:
+      ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.88em;
+    padding: 0.08rem 0.24rem;
+    white-space: break-spaces;
+    word-break: break-word;
+  }
+
+  .markdown-content :where(pre) {
+    overflow-x: auto;
+    border-radius: 0.375rem;
+    background: color-mix(in oklab, var(--muted) 72%, transparent);
+    margin-block: 0.65rem;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .markdown-content :where(pre code) {
+    display: block;
+    background: transparent;
+    padding: 0;
+    white-space: pre;
+    word-break: normal;
+  }
+
+  .markdown-file-preview {
+    font-size: 14px;
+    line-height: 1.58;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .markdown-file-preview :where(*) {
+    max-width: 100%;
+  }
+
+  .markdown-file-preview :where(p, li, a, code) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .markdown-file-preview :where(pre) {
+    overflow-x: hidden;
+    white-space: pre-wrap;
+  }
+
+  .markdown-file-preview :where(pre code) {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .markdown-content :where(img.contextbase-inline-image) {
+    display: block;
+    height: auto;
+    margin-block: 0.75rem;
+    margin-inline: auto;
+    max-width: 100%;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-node) {
+    display: flex;
+    justify-content: center;
+    margin-block: 0.75rem;
+    width: 100%;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-frame) {
+    display: inline-flex;
+    margin-block: 0.75rem;
+    margin-inline: auto;
+    max-width: 100%;
+    position: relative;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-node .contextbase-inline-image-frame) {
+    margin-block: 0;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-frame img.contextbase-inline-image) {
+    margin-block: 0;
+    width: 100%;
+  }
+
+  .markdown-content
+    :where(
+      .contextbase-inline-image-node.ProseMirror-selectednode .contextbase-inline-image-frame
+    ) {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-resize-handle) {
+    background: var(--primary);
+    border: 0;
+    border-radius: 999px;
+    cursor: ew-resize;
+    height: 2.25rem;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0.35rem;
+    z-index: 1;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-resize-handle-left) {
+    left: -0.7rem;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-resize-handle-right) {
+    right: -0.7rem;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-button) {
+    background: transparent;
+    border: 0;
+    cursor: zoom-in;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-actions) {
+    display: inline-flex;
+    gap: 0.25rem;
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-action) {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0.25rem;
+    color: var(--foreground);
+    display: inline-flex;
+    height: 1.7rem;
+    justify-content: center;
+    padding: 0;
+    text-decoration-line: none;
+    width: 1.7rem;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-action:hover) {
+    background: var(--muted);
+  }
+
+  .markdown-content :where(.contextbase-inline-image-action svg) {
+    height: 0.95rem;
+    width: 0.95rem;
+  }
+
+  .markdown-content :where(.contextbase-inline-image-button:focus-visible) {
+    border-radius: 0.375rem;
+    outline: 3px solid color-mix(in oklab, var(--ring) 40%, transparent);
+    outline-offset: 2px;
+  }
+
+  .markdown-content :where(.vertical-file-target-active),
+  [data-file-attachment-highlight="true"],
+  [data-comment-highlight="true"] {
+    border-color: color-mix(in oklab, var(--chart-2) 85%, white);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--chart-2) 85%, white);
+  }
+
+  .markdown-content :where(.vertical-file-card),
+  .markdown-editor-content .ProseMirror p:has(> a[data-contextbase-file-link="true"]:only-child) {
+    align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    display: flex;
+    gap: 0.65rem;
+    margin-block: 0.65rem;
+    min-height: 3rem;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .markdown-content :where(.vertical-file-card-icon) {
+    color: var(--muted-foreground);
+    flex: 0 0 auto;
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .markdown-content :where(.vertical-file-card-body) {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .markdown-content :where(.vertical-file-card-title) {
+    color: var(--foreground);
+    display: block;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .markdown-content :where(.vertical-file-card-action) {
+    align-items: center;
+    border-radius: 0.25rem;
+    color: var(--muted-foreground);
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 1.75rem;
+    justify-content: center;
+    text-decoration-line: none;
+    width: 1.75rem;
+  }
+
+  .markdown-content :where(.vertical-file-card-action:hover) {
+    background: var(--accent);
+    color: var(--foreground);
+  }
+
+  .markdown-content :where(.vertical-file-card-action svg) {
+    height: 0.95rem;
+    width: 0.95rem;
+  }
+
+  .markdown-content :where(ul[data-type="taskList"]) {
+    list-style: none;
+    padding-inline-start: 0;
+  }
+
+  .markdown-content :where(li[data-type="taskItem"]) {
+    display: grid;
+    grid-template-columns: 1.15rem minmax(0, 1fr);
+    gap: 0.45rem;
+  }
+
+  .markdown-content :where(li[data-type="taskItem"] > label) {
+    align-items: center;
+    display: flex;
+    height: 1.65em;
+    justify-content: center;
+  }
+
+  .markdown-content :where(li[data-type="taskItem"] input[type="checkbox"]) {
+    accent-color: var(--primary);
+    height: 0.9rem;
+    width: 0.9rem;
+  }
+
+  .markdown-content :where(li[data-type="taskItem"] > div > p:first-child) {
+    margin-block-start: 0;
+  }
+
+  .markdown-content :where(li[data-type="taskItem"] > div > p:last-child) {
+    margin-block-end: 0;
+  }
+
+  .markdown-content > :first-child,
+  .markdown-content .ProseMirror > :first-child {
+    margin-block-start: 0;
+  }
+
+  .markdown-content > :last-child,
+  .markdown-content .ProseMirror > :last-child {
+    margin-block-end: 0;
+  }
+
+  .markdown-editor-content {
+    min-height: inherit;
+    outline: none;
+  }
+
+  .markdown-editor-content.ProseMirror,
+  .markdown-editor-content .ProseMirror {
+    min-height: inherit;
+    outline: none;
+  }
+}
+
+@layer utilities {
+  .transition-colors {
+    transition-property: none;
+  }
+
+  .transition-all {
+    transition-property: opacity, transform, translate, scale, rotate, filter, backdrop-filter;
+  }
+}

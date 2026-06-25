@@ -1,0 +1,45 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/.pnpm-store",
+      "!**/dist",
+      "!node_modules",
+      "!apps/desktop/dist-electron",
+      "!apps/desktop/dist-types",
+      "!apps/desktop/out",
+      "!apps/desktop/playwright-report",
+      "!apps/desktop/test-results",
+      "!apps/web/src/react-datatable",
+      "!apps/web/src/react-datatable-server",
+      "!apps/web/src/routeTree.gen.ts",
+      "!packages/zero-schema/src/generated-schema.ts"
+    ]
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "asNeeded"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  }
+}

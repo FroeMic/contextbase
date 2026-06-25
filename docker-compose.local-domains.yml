@@ -1,0 +1,56 @@
+services:
+  auth:
+    environment:
+      AUTH_PUBLIC_BASE_URL: ${LOCAL_AUTH_BASE_URL:-https://contextbase-2.test}
+      CONTEXTBASE_API_RESOURCE_URL: ${LOCAL_API_RESOURCE_URL:-https://api.contextbase-2.test/api/v1}
+      CONTEXTBASE_MCP_RESOURCE_URL: ${LOCAL_MCP_RESOURCE_URL:-https://contextbase-2.test/mcp}
+      CONTEXTBASE_WEB_BASE_URL: ${LOCAL_APP_BASE_URL:-https://contextbase-2.test}
+
+  api:
+    environment:
+      CONTEXTBASE_API_PUBLIC_BASE_URL: ${LOCAL_API_BASE_URL:-https://api.contextbase-2.test}
+      CONTEXTBASE_API_RESOURCE_URL: ${LOCAL_API_RESOURCE_URL:-https://api.contextbase-2.test/api/v1}
+      CONTEXTBASE_APP_BASE_URL: ${LOCAL_APP_BASE_URL:-https://contextbase-2.test}
+      CONTEXTBASE_PUBLIC_ASSETS_BASE_URL: ${LOCAL_PUBLIC_ASSETS_BASE_URL:-https://contextbase-2.test/public}
+      CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL: ${LOCAL_UPLOADS_BASE_URL:-https://uploads.contextbase-2.test}
+
+  mcp:
+    environment:
+      MCP_PUBLIC_BASE_URL: ${LOCAL_MCP_BASE_URL:-https://contextbase-2.test}
+      CONTEXTBASE_AUTH_BASE_URL: ${LOCAL_AUTH_BASE_URL:-https://contextbase-2.test}
+      CONTEXTBASE_APP_BASE_URL: ${LOCAL_APP_BASE_URL:-https://contextbase-2.test}
+      CONTEXTBASE_WEB_BASE_URL: ${LOCAL_APP_BASE_URL:-https://contextbase-2.test}
+
+  web:
+    environment:
+      AUTH_COOKIE_DOMAIN: ${LOCAL_AUTH_COOKIE_DOMAIN:-.contextbase-2.test}
+      CONTEXTBASE_PUBLIC_ASSETS_BASE_URL: ${LOCAL_PUBLIC_ASSETS_BASE_URL:-https://contextbase-2.test/public}
+      CONTEXTBASE_UPLOADS_PUBLIC_BASE_URL: ${LOCAL_UPLOADS_BASE_URL:-https://uploads.contextbase-2.test}
+      VITE_ZERO_CACHE_URL: ${LOCAL_ZERO_BASE_URL:-https://zero.contextbase-2.test}
+      WEB_ALLOWED_HOSTS: ${LOCAL_WEB_ALLOWED_HOSTS:-contextbase-2.test,uploads.contextbase-2.test}
+      WEB_HMR_HOST: ${LOCAL_APP_HOST:-contextbase-2.test}
+
+  caddy-local:
+    image: caddy:2.10-alpine
+    environment:
+      LOCAL_API_HOST: ${LOCAL_API_HOST:-api.contextbase-2.test}
+      LOCAL_APP_HOST: ${LOCAL_APP_HOST:-contextbase-2.test}
+      LOCAL_CONSOLE_HOST: ${LOCAL_CONSOLE_HOST:-console.contextbase-2.test}
+      LOCAL_UPLOADS_HOST: ${LOCAL_UPLOADS_HOST:-uploads.contextbase-2.test}
+      LOCAL_ZERO_HOST: ${LOCAL_ZERO_HOST:-zero.contextbase-2.test}
+    depends_on:
+      api:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+      zero-cache:
+        condition: service_started
+    ports:
+      - "127.0.0.1:${LOCAL_DOMAINS_CADDY_PORT:-8117}:8117"
+    volumes:
+      - ./infra/local/Caddyfile:/etc/caddy/Caddyfile:ro
+    restart: unless-stopped
