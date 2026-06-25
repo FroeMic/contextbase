@@ -20,6 +20,14 @@ describe("app Zero schema relationships", () => {
         sourceField: ["avatarFileObjectId"],
       },
     ])
+    expect(schema.relationships.capturedSessionMessages.capturedSession).toMatchObject([
+      {
+        cardinality: "one",
+        destField: ["id"],
+        destSchema: "capturedSessions",
+        sourceField: ["capturedSessionId"],
+      },
+    ])
   })
 
   test("does not define copied or removed product relationships", () => {

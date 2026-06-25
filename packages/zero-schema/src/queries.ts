@@ -10,6 +10,11 @@ const workspaceRowsArgs = z.object({
   limit: z.number().int().min(1).max(500).default(100),
 })
 
+const capturedSessionArgs = z.object({
+  capturedSessionId: z.string(),
+  limit: z.number().int().min(1).max(1000).default(500),
+})
+
 function hasActiveWorkspace(ctx: ZeroAuthContext | undefined): ctx is ZeroAuthContext {
   return !!ctx?.activeWorkspaceId
 }
@@ -38,6 +43,39 @@ export const queries = defineQueries({
       .where("deletedAt", "IS", null)
       .one(),
   ),
+  capturedSessionsByWorkspace: defineAppQuery(workspaceRowsArgs, ({ args, ctx }) => {
+    if (!hasActiveWorkspace(ctx)) {
+      return zql.capturedSessions.where(({ or }) => or())
+    }
+
+    return zql.capturedSessions
+      .where("workspaceId", ctx.activeWorkspaceId)
+      .where("status", "active")
+      .orderBy("lastSyncedAt", "desc")
+      .limit(args.limit)
+  }),
+  capturedSessionMessages: defineAppQuery(capturedSessionArgs, ({ args, ctx }) => {
+    if (!hasActiveWorkspace(ctx)) {
+      return zql.capturedSessionMessages.where(({ or }) => or())
+    }
+
+    return zql.capturedSessionMessages
+      .where("workspaceId", ctx.activeWorkspaceId)
+      .where("capturedSessionId", args.capturedSessionId)
+      .orderBy("sequenceNumber", "asc")
+      .limit(args.limit)
+  }),
+  syncEventsByCapturedSession: defineAppQuery(capturedSessionArgs, ({ args, ctx }) => {
+    if (!hasActiveWorkspace(ctx)) {
+      return zql.sessionCaptureSyncEvents.where(({ or }) => or())
+    }
+
+    return zql.sessionCaptureSyncEvents
+      .where("workspaceId", ctx.activeWorkspaceId)
+      .where("capturedSessionId", args.capturedSessionId)
+      .orderBy("createdAt", "desc")
+      .limit(args.limit)
+  }),
   usersByWorkspace: defineAppQuery(workspaceRowsArgs, ({ args, ctx }) => {
     if (!hasActiveWorkspace(ctx)) {
       return zql.workspaceMemberships.where(({ or }) => or())

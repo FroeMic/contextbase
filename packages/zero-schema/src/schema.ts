@@ -10,10 +10,15 @@ const workspaceMembershipsRelationships = {
   user: one(["principalId"], "users", ["id"]),
 } as const
 
+const capturedSessionMessagesRelationships = {
+  capturedSession: one(["capturedSessionId"], "capturedSessions", ["id"]),
+} as const
+
 export const schema = {
   ...generatedSchema,
   relationships: {
     ...generatedSchema.relationships,
+    capturedSessionMessages: capturedSessionMessagesRelationships,
     users: usersRelationships,
     workspaceMemberships: workspaceMembershipsRelationships,
   },

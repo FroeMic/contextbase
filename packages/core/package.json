@@ -171,6 +171,18 @@
     "./domains/oauth/service": {
       "types": "./dist/domains/oauth/service.d.ts",
       "default": "./dist/domains/oauth/service.js"
+    },
+    "./domains/session-capture/repository": {
+      "types": "./dist/domains/session-capture/repository.d.ts",
+      "default": "./dist/domains/session-capture/repository.js"
+    },
+    "./domains/session-capture/schema": {
+      "types": "./dist/domains/session-capture/schema.d.ts",
+      "default": "./dist/domains/session-capture/schema.js"
+    },
+    "./domains/session-capture/service": {
+      "types": "./dist/domains/session-capture/service.d.ts",
+      "default": "./dist/domains/session-capture/service.js"
     }
   },
   "scripts": {

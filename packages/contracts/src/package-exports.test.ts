@@ -10,5 +10,6 @@ describe("package exports", () => {
     }
 
     expect(packageJson.exports).toHaveProperty("./domains/workspace-members/contract")
+    expect(packageJson.exports).toHaveProperty("./domains/session-capture/contract")
   })
 })

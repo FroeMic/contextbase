@@ -1,5 +1,6 @@
 export * from "./domains/invitations/cli.js"
 export * from "./domains/invitations/contract.js"
+export * from "./domains/session-capture/contract.js"
 export * from "./domains/users/cli.js"
 export * from "./domains/users/contract.js"
 export * from "./domains/workspace-members/cli.js"

@@ -11,6 +11,16 @@ import {
   oauthGrants,
   oauthRefreshTokens,
 } from "../domains/oauth/schema"
+import {
+  captureClients,
+  capturedSessionArtifacts,
+  capturedSessionMessages,
+  capturedSessionSourceSnapshots,
+  capturedSessions,
+  captureProviders,
+  sessionCaptureSyncBatches,
+  sessionCaptureSyncEvents,
+} from "../domains/session-capture/schema"
 import { onboardingSessions, signupEmailVerifications } from "../domains/signup/schema"
 import { apiTokens, users, workspaceMemberships } from "../domains/users/schema"
 import { workspaceSlugAliases, workspaces } from "../domains/workspaces/schema"
@@ -27,6 +37,16 @@ export {
   oauthGrants,
   oauthRefreshTokens,
 } from "../domains/oauth/schema"
+export {
+  captureClients,
+  capturedSessionArtifacts,
+  capturedSessionMessages,
+  capturedSessionSourceSnapshots,
+  capturedSessions,
+  captureProviders,
+  sessionCaptureSyncBatches,
+  sessionCaptureSyncEvents,
+} from "../domains/session-capture/schema"
 export { onboardingSessions, signupEmailVerifications } from "../domains/signup/schema"
 export {
   apiTokens,
@@ -39,6 +59,12 @@ export const schemaTables = {
   apiTokens,
   authMagicLinks,
   authSessions,
+  captureClients,
+  captureProviders,
+  capturedSessionArtifacts,
+  capturedSessionMessages,
+  capturedSessionSourceSnapshots,
+  capturedSessions,
   featureFlagRules,
   fileObjects,
   workspaceInvitations,
@@ -49,6 +75,8 @@ export const schemaTables = {
   oauthGrants,
   oauthRefreshTokens,
   onboardingSessions,
+  sessionCaptureSyncBatches,
+  sessionCaptureSyncEvents,
   signupEmailVerifications,
   users,
   workspaceMemberships,

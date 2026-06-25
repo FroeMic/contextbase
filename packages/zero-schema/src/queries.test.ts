@@ -77,7 +77,15 @@ describe("Zero custom queries", () => {
       Object.keys(queries)
         .filter((name) => name !== "~")
         .sort(),
-    ).toEqual(["activeWorkspace", "currentUser", "publicAvatarFile", "usersByWorkspace"])
+    ).toEqual([
+      "activeWorkspace",
+      "capturedSessionMessages",
+      "capturedSessionsByWorkspace",
+      "currentUser",
+      "publicAvatarFile",
+      "syncEventsByCapturedSession",
+      "usersByWorkspace",
+    ])
   })
 
   test("scopes workspace and current-user queries to authenticated context", () => {
@@ -108,5 +116,26 @@ describe("Zero custom queries", () => {
     expect(hasSimpleWhere(ast, "status", "=", "active")).toBe(true)
     expect(ast.orderBy).toEqual([["createdAt", "desc"]])
     expect(ast.limit).toBe(25)
+  })
+
+  test("scopes captured session reads to the active workspace", () => {
+    const ast = queryAst("capturedSessionsByWorkspace", { limit: 25 })
+
+    expect(hasSimpleWhere(ast, "workspaceId", "=", "wrk_demo")).toBe(true)
+    expect(hasSimpleWhere(ast, "status", "=", "active")).toBe(true)
+    expect(ast.orderBy).toEqual([["lastSyncedAt", "desc"]])
+    expect(ast.limit).toBe(25)
+  })
+
+  test("scopes captured message and sync event reads to workspace-owned sessions", () => {
+    const messagesAst = queryAst("capturedSessionMessages", { capturedSessionId: "cps_123" })
+    const eventsAst = queryAst("syncEventsByCapturedSession", { capturedSessionId: "cps_123" })
+
+    expect(hasSimpleWhere(messagesAst, "workspaceId", "=", "wrk_demo")).toBe(true)
+    expect(hasSimpleWhere(messagesAst, "capturedSessionId", "=", "cps_123")).toBe(true)
+    expect(messagesAst.orderBy).toEqual([["sequenceNumber", "asc"]])
+    expect(hasSimpleWhere(eventsAst, "workspaceId", "=", "wrk_demo")).toBe(true)
+    expect(hasSimpleWhere(eventsAst, "capturedSessionId", "=", "cps_123")).toBe(true)
+    expect(eventsAst.orderBy).toEqual([["createdAt", "desc"]])
   })
 })

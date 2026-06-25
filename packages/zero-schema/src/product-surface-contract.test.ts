@@ -70,15 +70,23 @@ const serverOnlyTables = ["apiTokens", "authMagicLinks", "authSessions"]
 
 const expectedQueryNames = [
   "activeWorkspace",
+  "capturedSessionMessages",
+  "capturedSessionsByWorkspace",
   "currentUser",
   "publicAvatarFile",
+  "syncEventsByCapturedSession",
   "usersByWorkspace",
 ]
 
 describe("Zero product surface", () => {
   test("generated schema only exposes Contextbase client-readable tables", () => {
     expect(Object.keys(schema.tables).sort()).toEqual([
+      "capturedSessionArtifacts",
+      "capturedSessionMessages",
+      "capturedSessionSourceSnapshots",
+      "capturedSessions",
       "fileObjects",
+      "sessionCaptureSyncEvents",
       "users",
       "workspaceMemberships",
       "workspaces",

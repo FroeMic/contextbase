@@ -24,6 +24,10 @@ import {
   createWorkspaceInvitationRouter,
   type WorkspaceInvitationRouteDependencies,
 } from "./domains/invitations/routes"
+import {
+  createSessionCaptureRouter,
+  type SessionCaptureRouteDependencies,
+} from "./domains/session-capture/routes"
 import { createUserRouter, type UserRouteDependencies } from "./domains/users/routes"
 import {
   createWorkspaceMemberRouter,
@@ -56,6 +60,7 @@ export type CreateApiAppOptions = {
   invitationStore?: WorkspaceInvitationRouteDependencies["invitationStore"]
   logger?: Logger
   sendWorkspaceInvitationEmail?: WorkspaceInvitationRouteDependencies["sendWorkspaceInvitationEmail"]
+  sessionCaptureStore?: SessionCaptureRouteDependencies["sessionCaptureStore"]
   uploadsPublicBaseUrl?: FileRouteDependencies["uploadsPublicBaseUrl"]
   userStore?: UserRouteDependencies["userStore"]
   workspaceMemberStore?: WorkspaceMemberRouteDependencies["workspaceMemberStore"]
@@ -71,6 +76,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   const userDependencies: UserRouteDependencies = {}
   const workspaceMemberDependencies: WorkspaceMemberRouteDependencies = {}
   const workspaceDependencies: WorkspaceRouteDependencies = {}
+  const sessionCaptureDependencies: SessionCaptureRouteDependencies = {}
 
   if (options.authenticateApiToken) {
     featureFlagDependencies.authenticateApiToken = options.authenticateApiToken
@@ -79,6 +85,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
     userDependencies.authenticateApiToken = options.authenticateApiToken
     workspaceMemberDependencies.authenticateApiToken = options.authenticateApiToken
     workspaceDependencies.authenticateApiToken = options.authenticateApiToken
+    sessionCaptureDependencies.authenticateApiToken = options.authenticateApiToken
   }
 
   if (options.featureFlagStore) {
@@ -107,6 +114,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
 
   if (options.dbClient) {
     fileDependencies.dbClient = options.dbClient
+    sessionCaptureDependencies.dbClient = options.dbClient
   }
 
   if (options.userStore) {
@@ -119,6 +127,10 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
 
   if (options.workspaceStore) {
     workspaceDependencies.workspaceStore = options.workspaceStore
+  }
+
+  if (options.sessionCaptureStore) {
+    sessionCaptureDependencies.sessionCaptureStore = options.sessionCaptureStore
   }
 
   if (options.logger) {
@@ -186,6 +198,11 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   })
 
   app.use("/api/v1/*", async (context, next) => {
+    if (isCaptureClientAuthenticatedRoute(context.req.raw)) {
+      await next()
+      return
+    }
+
     const token = extractBearerToken(context.req.raw)
 
     if (!token) {
@@ -238,6 +255,7 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   app.route("/", createUserRouter(userDependencies))
   app.route("/", createWorkspaceMemberRouter(workspaceMemberDependencies))
   app.route("/", createWorkspaceRouter(workspaceDependencies))
+  app.route("/", createSessionCaptureRouter(sessionCaptureDependencies))
 
   app.notFound((context) => {
     return context.json(errorEnvelope("not_found", "Route not found"), 404, {
@@ -246,6 +264,14 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
   })
 
   return app
+}
+
+function isCaptureClientAuthenticatedRoute(request: Request) {
+  const url = new URL(request.url)
+  return (
+    request.method.toUpperCase() === "POST" &&
+    url.pathname === "/api/v1/session-capture/sync/manual"
+  )
 }
 
 function reportContext(input: {

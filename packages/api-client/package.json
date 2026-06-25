@@ -31,6 +31,10 @@
     "./domains/files": {
       "types": "./dist/domains/files.d.ts",
       "default": "./dist/domains/files.js"
+    },
+    "./domains/session-capture": {
+      "types": "./dist/domains/session-capture.d.ts",
+      "default": "./dist/domains/session-capture.js"
     }
   },
   "scripts": {

@@ -24,6 +24,10 @@
       "types": "./dist/domains/workspaces/contract.d.ts",
       "default": "./dist/domains/workspaces/contract.js"
     },
+    "./domains/session-capture/contract": {
+      "types": "./dist/domains/session-capture/contract.d.ts",
+      "default": "./dist/domains/session-capture/contract.js"
+    },
     "./shared/envelopes": {
       "types": "./dist/shared/envelopes.d.ts",
       "default": "./dist/shared/envelopes.js"

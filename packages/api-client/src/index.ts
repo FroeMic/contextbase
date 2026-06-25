@@ -1,4 +1,5 @@
 export * from "./client"
 export * from "./domains/files"
+export * from "./domains/session-capture"
 export * from "./domains/users"
 export * from "./domains/workspaces"

@@ -22,7 +22,12 @@ describe("generated Zero schema", () => {
 
   test("includes only client-readable Contextbase tables", () => {
     expect(Object.keys(schema.tables).sort()).toEqual([
+      "capturedSessionArtifacts",
+      "capturedSessionMessages",
+      "capturedSessionSourceSnapshots",
+      "capturedSessions",
       "fileObjects",
+      "sessionCaptureSyncEvents",
       "users",
       "workspaceMemberships",
       "workspaces",
@@ -62,5 +67,11 @@ describe("generated Zero schema", () => {
     expect(schema.tables.fileObjects.columns).not.toHaveProperty("objectKey")
     expect(schema.tables.workspaceMemberships.columns).toHaveProperty("workspaceId")
     expect(schema.tables.workspaceMemberships.columns).toHaveProperty("principalId")
+    expect(schema.tables.capturedSessions.columns).toHaveProperty("workspaceId")
+    expect(schema.tables.capturedSessions.columns).toHaveProperty("kind")
+    expect(schema.tables.capturedSessionMessages.columns).toHaveProperty("capturedSessionId")
+    expect(schema.tables.capturedSessionArtifacts.columns).toHaveProperty("capturedSessionId")
+    expect(schema.tables.capturedSessionSourceSnapshots.columns).toHaveProperty("capturedSessionId")
+    expect(schema.tables.sessionCaptureSyncEvents.columns).toHaveProperty("capturedSessionId")
   })
 })

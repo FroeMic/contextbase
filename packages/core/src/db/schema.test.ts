@@ -8,6 +8,12 @@ import {
   apiTokens,
   authMagicLinks,
   authSessions,
+  captureClients,
+  capturedSessionArtifacts,
+  capturedSessionMessages,
+  capturedSessionSourceSnapshots,
+  capturedSessions,
+  captureProviders,
   featureFlagRules,
   fileObjects,
   oauthAccessTokens,
@@ -18,6 +24,8 @@ import {
   oauthRefreshTokens,
   onboardingSessions,
   schemaTables,
+  sessionCaptureSyncBatches,
+  sessionCaptureSyncEvents,
   signupEmailVerifications,
   users,
   workspaceInvitations,
@@ -34,6 +42,14 @@ describe("Contextbase schema", () => {
     expect(getTableName(authMagicLinks)).toBe("auth_magic_links")
     expect(getTableName(authSessions)).toBe("auth_sessions")
     expect(getTableName(featureFlagRules)).toBe("feature_flag_rules")
+    expect(getTableName(captureProviders)).toBe("capture_providers")
+    expect(getTableName(captureClients)).toBe("capture_clients")
+    expect(getTableName(capturedSessions)).toBe("captured_sessions")
+    expect(getTableName(capturedSessionMessages)).toBe("captured_session_messages")
+    expect(getTableName(capturedSessionArtifacts)).toBe("captured_session_artifacts")
+    expect(getTableName(capturedSessionSourceSnapshots)).toBe("captured_session_source_snapshots")
+    expect(getTableName(sessionCaptureSyncBatches)).toBe("session_capture_sync_batches")
+    expect(getTableName(sessionCaptureSyncEvents)).toBe("session_capture_sync_events")
     expect(getTableName(fileObjects)).toBe("file_objects")
     expect(getTableName(workspaceInvitations)).toBe("workspace_invitations")
     expect(getTableName(oauthClients)).toBe("oauth_clients")
@@ -67,6 +83,14 @@ describe("Contextbase schema", () => {
     expect(schemaTables).toHaveProperty("workspaceMemberships")
     expect(schemaTables).toHaveProperty("fileObjects")
     expect(schemaTables).toHaveProperty("oauthClients")
+    expect(schemaTables).toHaveProperty("captureProviders")
+    expect(schemaTables).toHaveProperty("captureClients")
+    expect(schemaTables).toHaveProperty("capturedSessions")
+    expect(schemaTables).toHaveProperty("capturedSessionMessages")
+    expect(schemaTables).toHaveProperty("capturedSessionArtifacts")
+    expect(schemaTables).toHaveProperty("capturedSessionSourceSnapshots")
+    expect(schemaTables).toHaveProperty("sessionCaptureSyncBatches")
+    expect(schemaTables).toHaveProperty("sessionCaptureSyncEvents")
 
     expect(schemaTables).not.toHaveProperty("businesses")
     expect(schemaTables).not.toHaveProperty("tasks")
@@ -96,7 +120,10 @@ describe("migration journal", () => {
       /^\d{4}_.+\.sql$/.test(filename),
     )
 
-    expect(migrationFiles).toEqual(["0000_contextbase_initial_schema.sql"])
+    expect(migrationFiles).toEqual([
+      "0000_contextbase_initial_schema.sql",
+      "0001_puzzling_mimic.sql",
+    ])
 
     const migrationSource = migrationFiles
       .map((filename) => readFileSync(resolve(migrationDir, filename), "utf8"))
