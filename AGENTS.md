@@ -1,6 +1,6 @@
-# Claude guidelines for contextbase
+# Agent Guidelines For Contextbase
 
-## Engineering preferences
+## Engineering Preferences
 
 - Preserve workspace scoping as the primary data ownership boundary. New user-visible product data must be tied to a workspace unless a spec explicitly says otherwise.
 - Use Zero for web app reads of replicated, client-readable workspace data.
@@ -10,6 +10,6 @@
 - Do not route browser-extension ingestion through web tRPC.
 - Capture architectural preferences in OpenSpec when they affect system behavior or future implementation choices.
 
-## Git workflow
+## Git Workflow
 
-- When merging pull requests, always use **merge commits** (`gh pr merge --merge` / "Create a merge commit"). Never squash or rebase merges — keep the branch's full commit history on main.
+- When merging pull requests, always use merge commits. Never squash or rebase merges into `main`.

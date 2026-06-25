@@ -1,7 +1,7 @@
 import type { BrowserSessionContext } from "@contextbase/core"
 import { describe, expect, test } from "vitest"
 
-import { buildZeroContextFromSession } from "./zero-handlers"
+import { buildZeroContextFromSession, handleZeroMutateRequest } from "./zero-handlers"
 
 const session: BrowserSessionContext = {
   activeWorkspaceId: "wrk_123",
@@ -22,6 +22,15 @@ describe("Zero server handlers", () => {
       activeWorkspaceSlug: "core",
       capabilities: ["contextbase:read"],
       userId: "usr_123",
+    })
+  })
+
+  test("keeps Zero mutators disabled for browser writes", async () => {
+    const response = await handleZeroMutateRequest()
+
+    expect(response.status).toBe(501)
+    await expect(response.json()).resolves.toEqual({
+      error: "Zero mutators are not enabled yet.",
     })
   })
 })

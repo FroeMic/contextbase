@@ -38,13 +38,13 @@ Alternative considered: allow sessions to move between workspaces. That adds aut
 
 ### Pair capture clients to a workspace-scoped token
 
-The extension should pair with Contextbase through a local pairing flow that creates a capture-client token scoped to a single workspace and limited to capture ingestion. The extension should not reuse provider credentials and should not need a broad user API token.
+The extension should pair with Contextbase through a local pairing flow that creates a capture-client token scoped to a single workspace and limited to capture ingestion writes plus minimal client status/probe reads. The extension should not reuse provider credentials and should not need a broad user API token.
 
 Alternative considered: use the browser login session directly. That is convenient locally, but it makes extension/background behavior and future automatic sync harder to reason about.
 
 ### Accept idempotent sync batches
 
-The ingestion API should accept a complete or partial view of the current provider session and upsert by stable provider IDs when available, falling back to deterministic fingerprints when provider IDs are missing. Re-running manual sync for the same browser page must update the captured session without duplicating messages.
+The ingestion API should accept a complete or partial view of the current provider session and upsert by stable provider IDs when available, falling back to deterministic fingerprints when provider IDs are missing. Re-running manual sync for the same browser page must update the captured session without duplicating messages, and changed content for the same stable source message must update the existing normalized message rather than creating a second message.
 
 Alternative considered: append-only ingestion. Append-only events preserve history, but without idempotent normalization the PoC would quickly create duplicate messages whenever a user clicks sync repeatedly.
 

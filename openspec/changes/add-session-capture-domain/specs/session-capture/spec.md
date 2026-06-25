@@ -20,6 +20,11 @@ Contextbase SHALL support capture clients that are paired to exactly one workspa
 - **THEN** Contextbase accepts writes only for the workspace assigned to that capture client
 - **AND** the client cannot write captured sessions into another workspace
 
+#### Scenario: Capture client has write-limited permissions
+- **WHEN** a request is authenticated only with capture-client credentials
+- **THEN** Contextbase allows session-capture ingestion writes and minimal capture-client status checks
+- **AND** the client cannot read arbitrary workspace data, manage workspace settings, manage members, or access unrelated API domains
+
 #### Scenario: Capture client avoids provider credentials
 - **WHEN** a browser extension pairs with Contextbase
 - **THEN** Contextbase issues or validates only Contextbase capture credentials
@@ -45,6 +50,11 @@ Contextbase SHALL make repeated sync of the same provider session idempotent.
 - **WHEN** a capture client submits the same provider session and messages more than once
 - **THEN** Contextbase updates existing captured records using stable provider identifiers or deterministic fingerprints
 - **AND** duplicate session messages are not created
+
+#### Scenario: Edited source message updates existing message
+- **WHEN** a later sync batch includes changed content for an existing source message with the same stable provider identifier or deterministic fingerprint
+- **THEN** Contextbase updates the existing normalized message record
+- **AND** the changed message is not stored as a duplicate message
 
 #### Scenario: New provider messages are appended in order
 - **WHEN** a later sync batch includes additional messages for an existing captured session
