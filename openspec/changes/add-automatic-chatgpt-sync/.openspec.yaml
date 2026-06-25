@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-06-25
+goal: Automatically sync ChatGPT sessions from open browser tabs into the paired
+  Contextbase workspace, idempotently upserting newly observed messages as the
+  user opens, scrolls, or continues a conversation.
