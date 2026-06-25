@@ -26,7 +26,7 @@ describe("bootstrap token", () => {
     const token = createBootstrapToken()
     const hash = hashApiToken(token)
 
-    expect(token).toMatch(/^vct_[A-Za-z0-9_-]{43}$/)
+    expect(token).toMatch(/^cbt_[A-Za-z0-9_-]{43}$/)
     expect(hash).not.toContain(token)
     expect(verifyApiToken(token, hash)).toBe(true)
     expect(verifyApiToken(`${token}x`, hash)).toBe(false)

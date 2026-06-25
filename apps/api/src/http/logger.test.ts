@@ -7,7 +7,7 @@ describe("operability logger", () => {
   test("redacts token-shaped fields recursively", () => {
     expect(
       redactLogFields({
-        apiToken: "vct_secret",
+        apiToken: "cbt_secret",
         authorization: "Bearer token",
         nested: {
           claimToken: "claim-secret",

@@ -1,9 +1,9 @@
 ## 1. Extension App Scaffold
 
-- [x] 1.1 Create `apps/browser-extension` as a pnpm workspace app with TypeScript, build, test, typecheck, and lint-compatible source layout.
-- [x] 1.2 Add a Chromium Manifest V3 manifest with popup, background service worker, ChatGPT content script matches, and minimal permissions.
-- [x] 1.3 Add build tooling that emits a loadable unpacked extension directory at `apps/browser-extension/dist`.
-- [x] 1.4 Add README or docs for loading the unpacked extension locally and connecting it to the local Contextbase API.
+- [x] 1.1 Migrate `apps/browser-extension` to WXT with React and TypeScript while keeping it as a first-class pnpm workspace app.
+- [x] 1.2 Define Chromium Manifest V3 metadata through WXT config/entrypoints with popup, background service worker, ChatGPT content script matches, and minimal permissions.
+- [x] 1.3 Ensure `pnpm --filter @contextbase/browser-extension build` emits a loadable unpacked extension directory at `apps/browser-extension/dist`.
+- [x] 1.4 Add README/docs for WXT dev/build/test commands, loading the unpacked extension locally, and connecting it to the local Contextbase API.
 
 ## 2. Configuration And Pairing
 
@@ -31,9 +31,12 @@
 
 ## 5. Local Verification
 
-- [x] 5.1 Run `pnpm --filter @contextbase/browser-extension build` and verify `dist/manifest.json` exists.
-- [x] 5.2 Run browser-extension unit tests.
-- [x] 5.3 Run repo-level `pnpm lint`.
-- [x] 5.4 Run repo-level `pnpm typecheck`.
-- [x] 5.5 Run repo-level `pnpm test`.
-- [x] 5.6 Validate the OpenSpec change with `openspec validate add-browser-extension-poc`.
+- [x] 5.1 Add browser-extension E2E tests that load the built WXT extension in Chromium and exercise manual capture against a fixture ChatGPT page.
+- [x] 5.2 Add E2E coverage that proves a captured session is accepted by a local Contextbase-compatible API and add live-stack smoke verification for workspace-scoped database tables.
+- [x] 5.3 Add local-stack verification for migrated session-capture tables and Zero publication table coverage.
+- [x] 5.4 Run `pnpm --filter @contextbase/browser-extension build` and verify `dist/manifest.json` exists.
+- [x] 5.5 Run browser-extension unit and E2E tests.
+- [x] 5.6 Run repo-level `pnpm lint`.
+- [x] 5.7 Run repo-level `pnpm typecheck`.
+- [x] 5.8 Run repo-level `pnpm test`.
+- [x] 5.9 Validate the OpenSpec change with `openspec validate add-browser-extension-poc`.

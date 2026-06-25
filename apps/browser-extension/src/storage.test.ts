@@ -37,7 +37,7 @@ describe("extension storage and pairing", () => {
                 workspaceId: "wrk_123",
                 workspaceSlug: "core",
               },
-              rawToken: "vcc_capture_token",
+              rawToken: "cbc_capture_token",
             },
             ok: true,
           }),
@@ -46,7 +46,7 @@ describe("extension storage and pairing", () => {
       },
     )
 
-    expect(result.captureToken).toBe("vcc_capture_token")
+    expect(result.captureToken).toBe("cbc_capture_token")
     expect(requests).toEqual([
       {
         body: { label: "Chrome Extension" },
@@ -59,7 +59,7 @@ describe("extension storage and pairing", () => {
     ])
     await expect(getExtensionConfig(storage)).resolves.toMatchObject({
       apiBaseUrl: "http://127.0.0.1:3017",
-      captureToken: "vcc_capture_token",
+      captureToken: "cbc_capture_token",
       client: {
         id: "cpc_123",
         workspaceSlug: "core",
@@ -73,11 +73,11 @@ describe("extension storage and pairing", () => {
 
     await saveCaptureTokenConfig(storage, {
       apiBaseUrl: "http://127.0.0.1:3017/",
-      captureToken: "vcc_existing",
+      captureToken: "cbc_existing",
     })
     await expect(getExtensionConfig(storage)).resolves.toMatchObject({
       apiBaseUrl: "http://127.0.0.1:3017",
-      captureToken: "vcc_existing",
+      captureToken: "cbc_existing",
     })
 
     await clearExtensionConfig(storage)

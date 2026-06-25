@@ -5,6 +5,7 @@ import { syncExtractedSession } from "../sync"
 const CAPTURE_ACTIVE_TAB = "contextbase.captureActiveTab"
 
 type RuntimeMessage = {
+  tabId?: number
   type: typeof CAPTURE_ACTIVE_TAB
 }
 
@@ -12,7 +13,7 @@ chrome.runtime.onMessage.addListener(
   (message: RuntimeMessage, _sender, sendResponse: (response: unknown) => void) => {
     if (message.type !== CAPTURE_ACTIVE_TAB) return false
 
-    captureActiveTab()
+    captureActiveTab(message.tabId)
       .then(sendResponse)
       .catch((error) => {
         sendResponse({
@@ -25,10 +26,13 @@ chrome.runtime.onMessage.addListener(
   },
 )
 
-async function captureActiveTab() {
+async function captureActiveTab(tabId?: number) {
   const storage = chromeStorageArea(chrome.storage.local)
   const controller = createCaptureFlowController({
     getActiveTab: async () => {
+      if (tabId !== undefined) {
+        return chrome.tabs.get(tabId)
+      }
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
       return tab ?? null
     },

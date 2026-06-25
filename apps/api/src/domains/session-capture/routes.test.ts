@@ -58,7 +58,7 @@ describe("session capture routes", () => {
           permission: ["session_capture:write", "session_capture:status"],
           workspaceId: "wrk_123",
         },
-        rawToken: expect.stringMatching(/^vcc_/),
+        rawToken: expect.stringMatching(/^cbc_/),
       },
       ok: true,
     })

@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Local Extension Build
-Contextbase SHALL provide a Chromium Manifest V3 browser-extension app that can be built and loaded locally as an unpacked extension.
+Contextbase SHALL provide a WXT, React, and TypeScript Chromium Manifest V3 browser-extension app that can be built and loaded locally as an unpacked extension.
 
 #### Scenario: Build artifact
 - **WHEN** the browser-extension build command is run
@@ -11,6 +11,11 @@ Contextbase SHALL provide a Chromium Manifest V3 browser-extension app that can 
 #### Scenario: Workspace integration
 - **WHEN** repo-wide lint, typecheck, and test commands run
 - **THEN** the browser-extension app participates in the same workspace verification pattern as other runnable apps
+
+#### Scenario: WXT generated manifest
+- **WHEN** the extension build command runs
+- **THEN** WXT generates the Manifest V3 `manifest.json` from checked-in config and entrypoints
+- **AND** the generated manifest includes the popup, background service worker, ChatGPT content script matches, and minimal required permissions
 
 ### Requirement: Extension Configuration And Pairing
 The browser extension SHALL support local setup with a Contextbase API base URL and workspace-scoped capture token.
@@ -28,6 +33,18 @@ The browser extension SHALL support local setup with a Contextbase API base URL 
 #### Scenario: Clear configuration
 - **WHEN** the user clears extension configuration
 - **THEN** stored API base URL, capture token, and last sync status are removed from extension storage
+
+#### Scenario: React popup state
+- **WHEN** the popup renders configuration, pairing, capture, success, and failure states
+- **THEN** those states are implemented through React components backed by typed extension services
+- **AND** user-facing token guidance distinguishes temporary API tokens from existing capture tokens
+- **AND** temporary Contextbase API tokens use the `cbt_` prefix while capture-client tokens use the `cbc_` prefix
+
+#### Scenario: Guided setup
+- **WHEN** the extension is not configured
+- **THEN** the popup guides the user through one selected setup path at a time
+- **AND** pairing with a temporary API token and saving an existing capture token are not shown as simultaneous required fields
+- **AND** the capture action is shown after a capture token has been stored
 
 ### Requirement: ChatGPT Visible Session Extraction
 The browser extension SHALL extract the currently visible ChatGPT conversation without crawling hidden provider history.
@@ -82,3 +99,25 @@ The browser extension SHALL keep Contextbase credentials scoped and isolate prov
 - **WHEN** the extension manifest is built
 - **THEN** host permissions are limited to supported provider origins and configured Contextbase API origins needed for the PoC
 - **AND** permissions do not include broad all-site access
+
+### Requirement: Extension End-To-End Verification
+The browser extension SHALL include automated E2E verification for the complete local manual-capture flow.
+
+#### Scenario: Manual capture E2E
+- **WHEN** the E2E test runs
+- **THEN** it builds and loads the unpacked WXT extension in Chromium
+- **AND** serves or opens a fixture ChatGPT-like conversation page
+- **AND** performs a manual capture through extension UI or extension runtime messaging
+- **AND** verifies that the local Contextbase API accepts the sync request
+
+#### Scenario: Database result E2E
+- **WHEN** the E2E sync succeeds against the local stack
+- **THEN** the test verifies the captured session and messages exist in session-capture database tables scoped to the paired workspace
+
+### Requirement: Local Zero Publication Readiness
+The local web stack SHALL verify that the running database and Zero publication match the generated Zero client schema before the web app is considered working.
+
+#### Scenario: Session-capture tables replicated
+- **WHEN** the local Docker/web/Zero stack is started for this PoC
+- **THEN** migrations have created the session-capture tables in the active database
+- **AND** the Zero publication includes the session-capture tables referenced by the generated Zero schema

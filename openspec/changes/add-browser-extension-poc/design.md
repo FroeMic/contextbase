@@ -8,6 +8,7 @@ The repo is a pnpm monorepo with first-class runnable apps under `apps/*` and sh
 
 **Goals:**
 - Create a locally loadable Chromium Manifest V3 extension.
+- Use WXT, React, and TypeScript for the extension app so ongoing extension work has file-based entrypoints, a typed browser API boundary, and a normal component model for popup UI.
 - Keep the extension provider-neutral in structure while implementing ChatGPT first.
 - Pair the extension with one Contextbase workspace through the existing capture-client API.
 - Avoid persisting broad user/API credentials after pairing.
@@ -15,6 +16,8 @@ The repo is a pnpm monorepo with first-class runnable apps under `apps/*` and sh
 - Submit manual sync payloads through the existing session-capture API.
 - Provide enough popup status and errors to debug the PoC without opening devtools.
 - Add tests that let an implementation agent detect parser regressions as ChatGPT markup assumptions change.
+- Add automated E2E tests that launch Chromium with the built extension, drive the popup/manual capture flow, and verify the local API/database result.
+- Verify the local web stack's Zero publication after migrations so the web app and Zero cache are not left on different schema versions.
 
 **Non-Goals:**
 - Automatic/background sync.
@@ -31,6 +34,12 @@ The repo is a pnpm monorepo with first-class runnable apps under `apps/*` and sh
 The extension has its own manifest, popup, service worker, content scripts, build output, and manual install flow. It should be versioned and tested as a runnable app next to `apps/web`, `apps/api`, and `apps/cli`, while reusing shared packages for contracts/API calls.
 
 Alternative considered: `packages/browser-extension`. That would make it look like a library and blur the build artifact boundary. The extension is not imported by other packages; it is installed into the browser.
+
+### Use WXT with React and TypeScript
+
+The extension should be implemented as a WXT app using React for popup UI and TypeScript for content/background/storage/sync code. WXT gives the extension first-class file-based entrypoints, generated manifests, Chromium MV3 output, development reload support, and a standard path to future cross-browser builds while staying compatible with the repo's Vite/TypeScript toolchain.
+
+Alternative considered: Keep the custom Vite manifest-copy build. That worked for the first smoke PoC, but it leaves too much extension-specific wiring in local scripts and makes ongoing popup, content-script, and E2E work harder than necessary.
 
 ### Keep the first popup simple and local-development focused
 
@@ -66,6 +75,16 @@ The popup should ask the active tab content script to extract the visible sessio
 
 Alternative considered: Let the content script call the API directly. That exposes the capture token in the provider page execution context boundary and makes host permissions harder to reason about.
 
+### Treat browser-extension E2E as required PoC evidence
+
+Unit tests are necessary for parser and payload behavior, but they do not prove that Chromium loads the extension, the popup can message a content script, the background script can call the local API, and the backend writes the captured session into the workspace database. The PoC should include an E2E test harness that builds the extension, launches Chromium with the unpacked output, serves a fixture ChatGPT-like page, performs a manual capture through extension UI or extension runtime messaging, and verifies the resulting API/database state.
+
+Alternative considered: Rely on manual unpacked-extension testing. Manual testing remains useful for exploratory provider markup work, but it is not enough for a repo-level confidence check.
+
+### Verify Zero publication as part of local-stack readiness
+
+The web app imports the generated Zero schema, so a running Zero cache must replicate the same table set after migrations. Local Docker setup should explicitly rerun migrations when needed and verify the Zero publication includes the session-capture tables before presenting the web app as working.
+
 ### Store raw snapshots, not provider credentials
 
 The raw snapshot should be the extension's extracted structured view and limited DOM/debug metadata needed to improve parsers. It must not include cookies, localStorage dumps, provider auth headers, or hidden account data.
@@ -82,7 +101,7 @@ Alternative considered: Store full HTML. Full HTML is easy to capture, but it is
 
 ## Migration Plan
 
-This change is additive. Add `apps/browser-extension` to the existing pnpm workspace by virtue of the current `apps/*` workspace pattern. No database migration is expected. The local install path is to build the extension and load `apps/browser-extension/dist` as an unpacked extension in Chromium.
+This change is additive. Add `apps/browser-extension` to the existing pnpm workspace by virtue of the current `apps/*` workspace pattern. No new database migration is expected beyond the existing session-capture backend migration, but local verification must prove the active Docker database and Zero publication include the session-capture tables. The local install path is to build the extension and load `apps/browser-extension/dist` as an unpacked extension in Chromium.
 
 Rollback is removing the new app and any root scripts added for convenience; backend session-capture functionality remains intact.
 

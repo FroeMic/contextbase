@@ -23,7 +23,7 @@ describe("session capture contracts", () => {
           workspaceId: "wrk_123",
           workspaceSlug: "core",
         },
-        rawToken: "vcc_raw",
+        rawToken: "cbc_raw",
       },
       ok: true,
     })

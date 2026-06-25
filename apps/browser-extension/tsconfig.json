@@ -1,10 +1,17 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
     "outDir": "dist-types",
-    "rootDir": "src",
     "tsBuildInfoFile": "dist-types/tsconfig.tsbuildinfo",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "entrypoints/**/*.ts",
+    "entrypoints/**/*.tsx",
+    "e2e/**/*.ts",
+    "src/**/*.ts",
+    "vitest.config.ts",
+    "wxt.config.ts"
+  ]
 }

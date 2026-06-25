@@ -27,11 +27,11 @@ describe("auth grant contract", () => {
           apiToken: apiTokenRow({
             principalId: "usr_admin",
             scope: ["contextbase:read", "contextbase:manage"],
-            token: "vct_admin",
+            token: "cbt_admin",
           }),
           workspaceMembership: { role: "workspace_admin" },
         }),
-        "vct_admin",
+        "cbt_admin",
       ),
     )
 
@@ -49,11 +49,11 @@ describe("auth grant contract", () => {
           apiToken: apiTokenRow({
             principalId: "usr_member",
             scope: ["contextbase:read", "contextbase:manage"],
-            token: "vct_member",
+            token: "cbt_member",
           }),
           workspaceMembership: { role: "workspace_member" },
         }),
-        "vct_member",
+        "cbt_member",
       ),
     )
 
@@ -71,11 +71,11 @@ describe("auth grant contract", () => {
           apiToken: apiTokenRow({
             principalId: "usr_unscoped_admin",
             scope: ["contextbase:read"],
-            token: "vct_unscoped_admin",
+            token: "cbt_unscoped_admin",
           }),
           workspaceMembership: { role: "workspace_admin" },
         }),
-        "vct_unscoped_admin",
+        "cbt_unscoped_admin",
       ),
     )
 
@@ -99,10 +99,10 @@ describe("auth grant contract", () => {
                 principalId: "agt_builder",
                 principalKind: "agent",
                 scope: ["contextbase:read", "contextbase:write", "contextbase:files"],
-                token: "vct_agent",
+                token: "cbt_agent",
               }),
             }),
-            "vct_agent",
+            "cbt_agent",
           ),
         ),
       ),

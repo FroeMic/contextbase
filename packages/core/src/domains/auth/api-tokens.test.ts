@@ -45,12 +45,12 @@ describe("API token management", () => {
     const result = await Effect.runPromise(
       createPersonalApiToken(store, userAuth, {
         label: "Claude CLI",
-        randomToken: () => "vct_raw",
+        randomToken: () => "cbt_raw",
         scope: ["contextbase:read", "contextbase:files", "contextbase:manage"],
       }),
     )
 
-    expect(result.rawToken).toBe("vct_raw")
+    expect(result.rawToken).toBe("cbt_raw")
     expect(result.token).toMatchObject({
       createdByUserId: "usr_123",
       label: "Claude CLI",
@@ -75,7 +75,7 @@ describe("API token management", () => {
             },
             {
               label: "Member admin",
-              randomToken: () => "vct_member_admin",
+              randomToken: () => "cbt_member_admin",
               scope: ["contextbase:read", "contextbase:manage"],
             },
           ),

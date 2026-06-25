@@ -47,11 +47,11 @@ describe("session capture service", () => {
     const result = await Effect.runPromise(
       createWorkspaceCaptureClient(store, adminContext, {
         label: "Chrome Extension",
-        randomToken: () => "vcc_raw",
+        randomToken: () => "cbc_raw",
       }),
     )
 
-    expect(result.rawToken).toBe("vcc_raw")
+    expect(result.rawToken).toBe("cbc_raw")
     expect(result.client).toMatchObject({
       label: "Chrome Extension",
       permission: ["session_capture:write", "session_capture:status"],
@@ -76,7 +76,7 @@ describe("session capture service", () => {
       touchCaptureClient: async () => undefined,
     }
 
-    const auth = await Effect.runPromise(authenticateCaptureClient(store, "vcc_raw"))
+    const auth = await Effect.runPromise(authenticateCaptureClient(store, "cbc_raw"))
 
     expect(auth).toEqual({
       authKind: "capture_client",

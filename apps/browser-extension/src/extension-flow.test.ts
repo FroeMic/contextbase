@@ -16,11 +16,11 @@ describe("extension capture flow", () => {
       getActiveTab: async () => ({ id: 7, url: "https://chatgpt.com/c/abc" }),
       getConfig: async () => ({
         apiBaseUrl: "http://127.0.0.1:3017",
-        captureToken: "vcc_capture",
+        captureToken: "cbc_capture",
       }),
       sendTabMessage: async (tabId, message) => {
         calls.push(`content:${tabId}:${message.type}`)
-        expect(JSON.stringify(message)).not.toContain("vcc_capture")
+        expect(JSON.stringify(message)).not.toContain("cbc_capture")
         return { extracted }
       },
       syncExtractedSession: async (config, session) => {
@@ -36,7 +36,7 @@ describe("extension capture flow", () => {
     })
     expect(calls).toEqual([
       "content:7:contextbase.extractCurrentSession",
-      "sync:vcc_capture:https://chatgpt.com/c/abc",
+      "sync:cbc_capture:https://chatgpt.com/c/abc",
     ])
   })
 
@@ -59,7 +59,7 @@ describe("extension capture flow", () => {
         getActiveTab: async () => ({ id: 1, url: "https://example.com" }),
         getConfig: async () => ({
           apiBaseUrl: "http://127.0.0.1:3017",
-          captureToken: "vcc_capture",
+          captureToken: "cbc_capture",
         }),
         sendTabMessage: async () => {
           throw new Error("should not extract unsupported tabs")

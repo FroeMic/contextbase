@@ -9,11 +9,11 @@ describe("extractBearerToken", () => {
   test("returns bearer token from authorization header", () => {
     const request = new Request("http://local.test", {
       headers: {
-        authorization: "Bearer vct_123",
+        authorization: "Bearer cbt_123",
       },
     })
 
-    expect(extractBearerToken(request)).toBe("vct_123")
+    expect(extractBearerToken(request)).toBe("cbt_123")
   })
 
   test("returns null when authorization header is missing", () => {
@@ -31,7 +31,7 @@ describe("authenticateApiToken", () => {
         principalKind: "user",
         scopeJson: JSON.stringify(["contextbase:read"]),
         status: "active",
-        tokenHash: hashApiToken("vct_test"),
+        tokenHash: hashApiToken("cbt_test"),
         workspaceId: "wrk_123",
         workspaceSlug: "core",
       },
@@ -41,7 +41,7 @@ describe("authenticateApiToken", () => {
     })
 
     await expect(
-      Effect.runPromise(authenticateBearerToken(client, "vct_test", { now })),
+      Effect.runPromise(authenticateBearerToken(client, "cbt_test", { now })),
     ).resolves.toMatchObject({
       authKind: "api_token",
       principalId: "usr_123",
@@ -50,7 +50,7 @@ describe("authenticateApiToken", () => {
     })
 
     await expect(
-      Effect.runPromise(authenticateApiToken(client, "vct_test", { now })),
+      Effect.runPromise(authenticateApiToken(client, "cbt_test", { now })),
     ).resolves.toMatchObject({
       authKind: "api_token",
       principalId: "usr_123",
@@ -69,7 +69,7 @@ describe("authenticateApiToken", () => {
         principalKind: "user",
         scopeJson: JSON.stringify(["contextbase:read", "contextbase:files"]),
         status: "active",
-        tokenHash: hashApiToken("vct_test"),
+        tokenHash: hashApiToken("cbt_test"),
         workspaceId: "wrk_123",
         workspaceSlug: "core",
       },
@@ -80,7 +80,7 @@ describe("authenticateApiToken", () => {
     })
 
     await expect(
-      Effect.runPromise(authenticateApiToken(client, "vct_test", { now })),
+      Effect.runPromise(authenticateApiToken(client, "cbt_test", { now })),
     ).resolves.toEqual({
       authKind: "api_token",
       principalId: "usr_123",
@@ -107,7 +107,7 @@ describe("authenticateApiToken", () => {
         principalKind: "agent",
         scopeJson: JSON.stringify(["contextbase:read", "contextbase:files"]),
         status: "active",
-        tokenHash: hashApiToken("vct_agent"),
+        tokenHash: hashApiToken("cbt_agent"),
         workspaceId: "wrk_123",
         workspaceSlug: "core",
       },
@@ -115,7 +115,7 @@ describe("authenticateApiToken", () => {
     })
 
     await expect(
-      Effect.runPromise(Effect.flip(authenticateApiToken(client, "vct_agent", { now }))),
+      Effect.runPromise(Effect.flip(authenticateApiToken(client, "cbt_agent", { now }))),
     ).resolves.toMatchObject({
       _tag: "ForbiddenError",
       code: "forbidden",
@@ -131,14 +131,14 @@ describe("authenticateApiToken", () => {
         principalKind: "agent",
         scopeJson: JSON.stringify(["contextbase:read"]),
         status: "active",
-        tokenHash: hashApiToken("vct_agent"),
+        tokenHash: hashApiToken("cbt_agent"),
         workspaceId: "wrk_123",
         workspaceSlug: "core",
       },
     })
 
     await expect(
-      Effect.runPromise(Effect.flip(authenticateApiToken(client, "vct_agent"))),
+      Effect.runPromise(Effect.flip(authenticateApiToken(client, "cbt_agent"))),
     ).resolves.toMatchObject({
       _tag: "ForbiddenError",
       code: "forbidden",

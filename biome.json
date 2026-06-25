@@ -16,8 +16,11 @@
   "files": {
     "includes": [
       "**",
+      "!**/.wxt",
       "!**/.pnpm-store",
       "!**/dist",
+      "!**/playwright-report",
+      "!**/test-results",
       "!node_modules",
       "!apps/desktop/dist-electron",
       "!apps/desktop/dist-types",

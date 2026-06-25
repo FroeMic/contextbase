@@ -31,7 +31,7 @@ describe("manual sync", () => {
     const result = await syncExtractedSession(
       {
         apiBaseUrl: "http://127.0.0.1:3017/",
-        captureToken: "vcc_capture",
+        captureToken: "cbc_capture",
       },
       extracted,
       async (url, init) => {
@@ -83,7 +83,7 @@ describe("manual sync", () => {
           },
         },
         headers: {
-          authorization: "Bearer vcc_capture",
+          authorization: "Bearer cbc_capture",
           "content-type": "application/json",
         },
         url: "http://127.0.0.1:3017/api/v1/session-capture/sync/manual",
@@ -94,7 +94,7 @@ describe("manual sync", () => {
   test("returns useful sync errors without mutating configuration", async () => {
     await expect(
       syncExtractedSession(
-        { apiBaseUrl: "http://127.0.0.1:3017", captureToken: "vcc_capture" },
+        { apiBaseUrl: "http://127.0.0.1:3017", captureToken: "cbc_capture" },
         {
           messages: [],
           parserVersion: "chatgpt-dom@0.1.0",
@@ -123,7 +123,7 @@ describe("manual sync", () => {
   test("reports network failures as sync failures", async () => {
     await expect(
       syncExtractedSession(
-        { apiBaseUrl: "http://127.0.0.1:3017", captureToken: "vcc_capture" },
+        { apiBaseUrl: "http://127.0.0.1:3017", captureToken: "cbc_capture" },
         {
           messages: [],
           parserVersion: "chatgpt-dom@0.1.0",

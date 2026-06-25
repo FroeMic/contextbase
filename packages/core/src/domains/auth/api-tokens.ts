@@ -241,7 +241,7 @@ export function revokeWorkspaceMemberApiToken(
 }
 
 export function createApiTokenSecret() {
-  return `vct_${randomBytes(32).toString("base64url")}`
+  return `cbt_${randomBytes(32).toString("base64url")}`
 }
 
 export function normalizeApiTokenScopes(scopes: ApiTokenScope[]): ApiTokenScope[] {

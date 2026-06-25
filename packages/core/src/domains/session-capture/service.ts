@@ -465,7 +465,7 @@ function captureClientPermissions(captureClient: CaptureClientLike) {
 }
 
 export function createCaptureClientToken() {
-  return `vcc_${randomBytes(32).toString("base64url")}`
+  return `cbc_${randomBytes(32).toString("base64url")}`
 }
 
 export function hashCaptureClientToken(token: string) {

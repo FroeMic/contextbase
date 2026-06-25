@@ -21,7 +21,7 @@ export type BootstrapResult = {
 }
 
 export function createBootstrapToken() {
-  return `vct_${randomBytes(32).toString("base64url")}`
+  return `cbt_${randomBytes(32).toString("base64url")}`
 }
 
 export function hashApiToken(token: string) {
