@@ -147,6 +147,138 @@ test.describe("manual capture extension flow", () => {
       await rm(userDataDir, { force: true, recursive: true })
     }
   })
+
+  test("automatically syncs an opened ChatGPT session and scroll-discovered history", async () => {
+    const extensionPath = resolve(import.meta.dirname, "../dist")
+    const userDataDir = await mkdtemp(resolve(tmpdir(), "contextbase-extension-e2e-"))
+    let context: BrowserContext | undefined
+    let server: Server | undefined
+    const syncRequests: unknown[] = []
+
+    try {
+      context = await chromium.launchPersistentContext(userDataDir, {
+        args: [`--disable-extensions-except=${extensionPath}`, `--load-extension=${extensionPath}`],
+        headless: false,
+      })
+    } catch (error) {
+      await rm(userDataDir, { force: true, recursive: true })
+      test.skip(
+        true,
+        `Chromium extension runtime is unavailable in this environment: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+      return
+    }
+
+    try {
+      const serviceWorker =
+        context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"))
+      server = await startFakeContextbaseApi(syncRequests)
+      const address = server.address()
+      if (!address || typeof address === "string") throw new Error("Fake API did not bind")
+      const apiBaseUrl = `http://127.0.0.1:${address.port}`
+
+      await serviceWorker.evaluate(async (baseUrl) => {
+        await chrome.storage.local.set({
+          apiBaseUrl: baseUrl,
+          autoSyncEnabled: true,
+          captureToken: "cbc_e2e_capture",
+        })
+      }, apiBaseUrl)
+
+      await context.route("https://chatgpt.com/c/auto-fixture", (route) =>
+        route.fulfill({
+          body: `
+            <!doctype html>
+            <html>
+              <head><title>Ignored Browser Title</title></head>
+              <body style="margin:0">
+                <main style="min-height: 2400px; padding-top: 1200px">
+                  <h1>Automatic Fixture Session</h1>
+                  <div id="history"></div>
+                  <article data-testid="conversation-turn-2">
+                    <div data-message-author-role="assistant" data-message-id="msg-latest-auto">
+                      Latest visible response
+                    </div>
+                  </article>
+                </main>
+                <script>
+                  window.scrollTo(0, document.documentElement.scrollHeight)
+                  window.addEventListener("scroll", () => {
+                    if (window.scrollY > 16 || document.getElementById("older-turn")) return
+                    const article = document.createElement("article")
+                    article.id = "older-turn"
+                    article.setAttribute("data-testid", "conversation-turn-1")
+                    article.innerHTML = '<div data-message-author-role="user" data-message-id="msg-older-auto">Older prompt revealed by scroll</div>'
+                    document.getElementById("history").prepend(article)
+                  })
+                </script>
+              </body>
+            </html>
+          `,
+          contentType: "text/html",
+        }),
+      )
+
+      const page = await context.newPage()
+      await page.goto("https://chatgpt.com/c/auto-fixture")
+      await expect(page.getByText("Latest visible response")).toBeVisible()
+
+      await expect.poll(() => syncRequests.length, { timeout: 8_000 }).toBeGreaterThanOrEqual(1)
+      expect(syncRequests.at(-1)).toMatchObject({
+        observation: {
+          latestBoundarySeen: true,
+          observationReason: expect.any(String),
+          syncMode: "automatic",
+        },
+        messages: [
+          {
+            contentText: "Latest visible response",
+            sourceMessageId: "msg-latest-auto",
+          },
+        ],
+      })
+
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await expect(page.getByText("Older prompt revealed by scroll")).toBeVisible()
+      await expect
+        .poll(
+          () =>
+            syncRequests.some((request) =>
+              JSON.stringify(request).includes("Older prompt revealed by scroll"),
+            ),
+          { timeout: 8_000 },
+        )
+        .toBe(true)
+      expect(
+        syncRequests.some(
+          (request) =>
+            (request as { observation?: { oldestBoundarySeen?: boolean } }).observation
+              ?.oldestBoundarySeen,
+        ),
+      ).toBe(true)
+
+      const observedMessageIds = new Set(
+        syncRequests
+          .flatMap((request) =>
+            Array.isArray((request as { messages?: unknown[] }).messages)
+              ? ((request as { messages: Array<{ sourceMessageId?: string }> }).messages ?? [])
+              : [],
+          )
+          .map((message) => message.sourceMessageId)
+          .filter(Boolean),
+      )
+      expect(observedMessageIds).toEqual(new Set(["msg-latest-auto", "msg-older-auto"]))
+    } finally {
+      if (server) {
+        const activeServer = server
+        await new Promise<void>((resolveClose) => activeServer.close(() => resolveClose()))
+      }
+      await context?.close()
+      await rm(userDataDir, { force: true, recursive: true })
+    }
+  })
 })
 
 async function startFakeContextbaseApi(syncRequests: unknown[]) {
@@ -166,14 +298,15 @@ async function startFakeContextbaseApi(syncRequests: unknown[]) {
       body += chunk
     })
     request.on("end", () => {
-      syncRequests.push(JSON.parse(body))
+      const parsedBody = JSON.parse(body) as { messages?: unknown[] }
+      syncRequests.push(parsedBody)
       response.writeHead(200, { "content-type": "application/json" })
       response.end(
         JSON.stringify({
           data: {
             artifactCount: 0,
             capturedSessionId: "cps_e2e",
-            messageCount: 2,
+            messageCount: parsedBody.messages?.length ?? 0,
             syncBatchId: "scb_e2e",
             syncStatus: "accepted",
           },

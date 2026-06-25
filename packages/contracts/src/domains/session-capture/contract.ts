@@ -103,10 +103,36 @@ export const SessionCaptureSourceSnapshotInputSchema = Schema.Struct({
 })
 export type SessionCaptureSourceSnapshotInput = typeof SessionCaptureSourceSnapshotInputSchema.Type
 
+export const SessionCaptureSyncModeSchema = Schema.Literal("manual", "automatic")
+export type SessionCaptureSyncMode = typeof SessionCaptureSyncModeSchema.Type
+
+export const SessionCaptureObservationReasonSchema = Schema.Literal(
+  "initial_load",
+  "mutation",
+  "scroll",
+  "manual_force",
+  "retry",
+)
+export type SessionCaptureObservationReason = typeof SessionCaptureObservationReasonSchema.Type
+
+export const SessionCaptureObservationInputSchema = Schema.Struct({
+  latestBoundarySeen: Schema.optional(Schema.Boolean),
+  latestObservedMessageKey: Schema.optional(Schema.String),
+  observationReason: SessionCaptureObservationReasonSchema,
+  observedAt: Schema.optional(Schema.String),
+  observedMessageKeys: Schema.optional(Schema.Array(Schema.String)),
+  oldestBoundarySeen: Schema.optional(Schema.Boolean),
+  oldestObservedMessageKey: Schema.optional(Schema.String),
+  syncMode: SessionCaptureSyncModeSchema,
+  visibleMessageCount: Schema.optional(Schema.Number),
+})
+export type SessionCaptureObservationInput = typeof SessionCaptureObservationInputSchema.Type
+
 export const SessionCaptureManualSyncBodySchema = Schema.Struct({
   artifacts: Schema.optional(Schema.Array(SessionCaptureArtifactInputSchema)),
   idempotencyKey: Schema.optional(Schema.String),
   messages: Schema.optional(Schema.Array(SessionCaptureMessageInputSchema)),
+  observation: Schema.optional(SessionCaptureObservationInputSchema),
   parserVersion: Schema.optional(Schema.String),
   provider: SessionCaptureProviderInputSchema,
   session: SessionCaptureSessionInputSchema,

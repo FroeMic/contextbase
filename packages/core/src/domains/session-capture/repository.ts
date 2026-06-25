@@ -42,7 +42,9 @@ export function createPostgresSessionCaptureStore(client: DbClient): SessionCapt
         .insert(sessionCaptureSyncBatches)
         .values({
           captureClientId: input.captureClientId,
+          artifactCount: input.artifactCount,
           idempotencyKey: input.idempotencyKey,
+          messageCount: input.messageCount,
           status: input.status,
           workspaceId: input.workspaceId,
           ...(input.capturedSessionId ? { capturedSessionId: input.capturedSessionId } : {}),
@@ -56,6 +58,8 @@ export function createPostgresSessionCaptureStore(client: DbClient): SessionCapt
           ],
           set: {
             capturedSessionId: input.capturedSessionId,
+            artifactCount: input.artifactCount,
+            messageCount: input.messageCount,
             parserVersion: input.parserVersion,
             providerId: input.providerId,
             status: input.status,
@@ -220,6 +224,7 @@ export function createPostgresSessionCaptureStore(client: DbClient): SessionCapt
           sourceUrl: input.sourceUrl,
           workspaceId: input.workspaceId,
           workspaceSlug: input.workspaceSlug,
+          ...(input.metadataJson ? { metadataJson: input.metadataJson } : {}),
           ...(input.sourceSessionId ? { sourceSessionId: input.sourceSessionId } : {}),
           ...(input.title ? { title: input.title } : {}),
         })
@@ -233,6 +238,7 @@ export function createPostgresSessionCaptureStore(client: DbClient): SessionCapt
             captureClientId: input.captureClientId,
             kind: input.kind,
             lastSyncedAt: input.lastSyncedAt,
+            metadataJson: input.metadataJson,
             sourceSessionId: input.sourceSessionId,
             sourceUrl: input.sourceUrl,
             title: input.title,

@@ -14,6 +14,7 @@ export type ExtensionStorageArea = {
 
 export type ExtensionConfig = {
   apiBaseUrl: string
+  autoSyncEnabled: boolean
   captureToken: string
   client?: CaptureClientDto
   lastSync?: LastSyncStatus
@@ -27,13 +28,22 @@ export type LastSyncStatus = {
   syncedAt: string
 }
 
+export type AutomaticSyncFingerprints = Record<string, string>
+
 export type PairCaptureClientInput = {
   apiBaseUrl: string
   apiToken: string
   label: string
 }
 
-const STORAGE_KEYS = ["apiBaseUrl", "captureToken", "client", "lastSync"]
+const STORAGE_KEYS = [
+  "apiBaseUrl",
+  "autoSyncEnabled",
+  "autoSyncFingerprints",
+  "captureToken",
+  "client",
+  "lastSync",
+]
 
 export function createMemoryStorageArea(initial: Record<string, unknown> = {}) {
   const state = new Map(Object.entries(initial))
@@ -80,6 +90,7 @@ export async function getExtensionConfig(
   }
   return {
     apiBaseUrl: values.apiBaseUrl,
+    autoSyncEnabled: typeof values.autoSyncEnabled === "boolean" ? values.autoSyncEnabled : true,
     captureToken: values.captureToken,
     ...(isCaptureClient(values.client) ? { client: values.client } : {}),
     ...(isLastSyncStatus(values.lastSync) ? { lastSync: values.lastSync } : {}),
@@ -92,6 +103,7 @@ export async function saveCaptureTokenConfig(
 ) {
   await storage.set({
     apiBaseUrl: normalizeApiBaseUrl(input.apiBaseUrl),
+    autoSyncEnabled: true,
     captureToken: input.captureToken,
     ...(input.client ? { client: input.client } : {}),
   })
@@ -99,6 +111,38 @@ export async function saveCaptureTokenConfig(
 
 export async function saveLastSyncStatus(storage: ExtensionStorageArea, lastSync: LastSyncStatus) {
   await storage.set({ lastSync })
+}
+
+export async function saveAutoSyncEnabled(storage: ExtensionStorageArea, autoSyncEnabled: boolean) {
+  await storage.set({ autoSyncEnabled })
+}
+
+export async function getAcceptedAutoSyncFingerprint(
+  storage: ExtensionStorageArea,
+  key: string,
+): Promise<string | undefined> {
+  const values = await storage.get(["autoSyncFingerprints"])
+  const fingerprints = isStringRecord(values.autoSyncFingerprints)
+    ? values.autoSyncFingerprints
+    : {}
+  return fingerprints[key]
+}
+
+export async function saveAcceptedAutoSyncFingerprint(
+  storage: ExtensionStorageArea,
+  key: string,
+  fingerprint: string,
+) {
+  const values = await storage.get(["autoSyncFingerprints"])
+  const fingerprints = isStringRecord(values.autoSyncFingerprints)
+    ? values.autoSyncFingerprints
+    : {}
+  await storage.set({
+    autoSyncFingerprints: {
+      ...fingerprints,
+      [key]: fingerprint,
+    },
+  })
 }
 
 export async function clearExtensionConfig(storage: ExtensionStorageArea) {
@@ -147,6 +191,14 @@ function isCaptureClient(value: unknown): value is CaptureClientDto {
 
 function isLastSyncStatus(value: unknown): value is LastSyncStatus {
   return typeof value === "object" && value !== null && "status" in value && "syncedAt" in value
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.values(value).every((item) => typeof item === "string")
+  )
 }
 
 export type SyncResponseBody = SessionCaptureManualSyncResponse

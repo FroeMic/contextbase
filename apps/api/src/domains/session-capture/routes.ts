@@ -216,6 +216,35 @@ function toManualSyncInput(body: SessionCaptureManualSyncBody): ManualSyncBatchI
           })),
         }
       : {}),
+    ...(body.observation
+      ? {
+          observation: {
+            observationReason: body.observation.observationReason,
+            syncMode: body.observation.syncMode,
+            ...(body.observation.latestBoundarySeen !== undefined
+              ? { latestBoundarySeen: body.observation.latestBoundarySeen }
+              : {}),
+            ...(body.observation.latestObservedMessageKey
+              ? { latestObservedMessageKey: body.observation.latestObservedMessageKey }
+              : {}),
+            ...(body.observation.observedAt
+              ? { observedAt: new Date(body.observation.observedAt) }
+              : {}),
+            ...(body.observation.observedMessageKeys
+              ? { observedMessageKeys: [...body.observation.observedMessageKeys] }
+              : {}),
+            ...(body.observation.oldestBoundarySeen !== undefined
+              ? { oldestBoundarySeen: body.observation.oldestBoundarySeen }
+              : {}),
+            ...(body.observation.oldestObservedMessageKey
+              ? { oldestObservedMessageKey: body.observation.oldestObservedMessageKey }
+              : {}),
+            ...(body.observation.visibleMessageCount !== undefined
+              ? { visibleMessageCount: body.observation.visibleMessageCount }
+              : {}),
+          },
+        }
+      : {}),
     ...(body.parserVersion ? { parserVersion: body.parserVersion } : {}),
     ...(body.sourceSnapshot
       ? {

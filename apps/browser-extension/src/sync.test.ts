@@ -91,6 +91,71 @@ describe("manual sync", () => {
     ])
   })
 
+  test("includes automatic observation metadata in sync payloads", async () => {
+    const requests: Array<{ body: unknown; url: string }> = []
+
+    await syncExtractedSession(
+      {
+        apiBaseUrl: "http://127.0.0.1:3017/",
+        captureToken: "cbc_capture",
+      },
+      {
+        messages: [
+          {
+            contentText: "Hello",
+            role: "user",
+            sequenceNumber: "000001",
+            sourceMessageKey: "msg-1",
+          },
+        ],
+        observation: {
+          latestBoundarySeen: true,
+          latestObservedMessageKey: "msg-1",
+          observationReason: "initial_load",
+          observedAt: "2026-06-25T16:25:00.000Z",
+          observedMessageKeys: ["msg-1"],
+          oldestBoundarySeen: false,
+          syncMode: "automatic",
+          visibleMessageCount: 1,
+        },
+        parserVersion: "chatgpt-dom@0.1.0",
+        provider: { displayName: "ChatGPT", providerKey: "chatgpt" },
+        session: {
+          kind: "chat",
+          sourceSessionId: "chat-1",
+          sourceUrl: "https://chatgpt.com/c/chat-1",
+        },
+      },
+      async (url, init) => {
+        requests.push({
+          body: JSON.parse(String(init?.body)),
+          url: String(url),
+        })
+        return new Response(
+          JSON.stringify({
+            data: {
+              capturedSessionId: "cps_123",
+              messageCount: 1,
+              syncStatus: "accepted",
+            },
+            ok: true,
+          }),
+          { status: 200 },
+        )
+      },
+    )
+
+    expect(requests[0]?.body).toMatchObject({
+      observation: {
+        latestBoundarySeen: true,
+        observationReason: "initial_load",
+        observedMessageKeys: ["msg-1"],
+        syncMode: "automatic",
+        visibleMessageCount: 1,
+      },
+    })
+  })
+
   test("returns useful sync errors without mutating configuration", async () => {
     await expect(
       syncExtractedSession(

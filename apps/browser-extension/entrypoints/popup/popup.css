@@ -54,6 +54,16 @@ input {
   padding: 9px 10px;
 }
 
+input[type="checkbox"] {
+  width: auto;
+}
+
+.toggle-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
 .setup-mode {
   display: grid;
   grid-template-columns: 1fr 1fr;

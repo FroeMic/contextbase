@@ -183,24 +183,94 @@ describe("session capture service", () => {
     expect(store.syncEvents.map((event) => event.status)).toEqual(["accepted", "accepted"])
     expect(store.sourceSnapshots).toHaveLength(1)
   })
+
+  test("stores automatic observation metadata and writes final sync batch counts", async () => {
+    const store = createInMemoryStore()
+
+    await Effect.runPromise(
+      ingestManualSyncBatch(store, pairedClient, {
+        idempotencyKey: "auto-sync-1",
+        observation: {
+          latestBoundarySeen: true,
+          latestObservedMessageKey: "msg-2",
+          observationReason: "initial_load",
+          observedAt: new Date("2026-06-25T16:25:00.000Z"),
+          observedMessageKeys: ["msg-1", "msg-2"],
+          oldestBoundarySeen: false,
+          syncMode: "automatic",
+          visibleMessageCount: 2,
+        },
+        parserVersion: "chatgpt-dom@1",
+        provider: { displayName: "ChatGPT", providerKey: "chatgpt" },
+        session: {
+          kind: "chat",
+          sourceSessionId: "chat-1",
+          sourceUrl: "https://chatgpt.com/c/chat-1",
+          title: "Planning",
+        },
+        messages: [
+          {
+            contentText: "First prompt",
+            role: "user",
+            sequenceNumber: "000001",
+            sourceMessageId: "msg-1",
+          },
+          {
+            contentText: "Assistant response",
+            role: "assistant",
+            sequenceNumber: "000002",
+            sourceMessageId: "msg-2",
+          },
+        ],
+      }),
+    )
+
+    expect(JSON.parse(store.sessions[0]?.metadataJson ?? "{}")).toMatchObject({
+      sessionCaptureObservation: {
+        latestBoundarySeen: true,
+        latestObservedMessageKey: "msg-2",
+        observationReason: "initial_load",
+        observedMessageKeys: ["msg-1", "msg-2"],
+        oldestBoundarySeen: false,
+        syncMode: "automatic",
+        visibleMessageCount: 2,
+      },
+    })
+    expect(store.syncBatches[0]).toMatchObject({
+      artifactCount: 0,
+      messageCount: 2,
+      status: "accepted",
+    })
+  })
 })
 
 function createInMemoryStore() {
   const providers = new Map<string, { displayName: string; id: string; providerKey: string }>()
-  const sessions = new Map<string, { id: string; sourceSessionKey: string; title?: string }>()
+  const sessions = new Map<
+    string,
+    { id: string; metadataJson?: string; sourceSessionKey: string; title?: string }
+  >()
   const messages = new Map<string, { contentText?: string; id: string; sourceMessageKey: string }>()
+  const syncBatches: unknown[] = []
   const syncEvents: Array<{ status: string }> = []
   const sourceSnapshots: Array<{ snapshotJson?: string }> = []
   const store: SessionCaptureStore & {
     messages: Array<{ contentText?: string; id: string; sourceMessageKey: string }>
+    sessions: Array<{ id: string; metadataJson?: string; sourceSessionKey: string; title?: string }>
     sourceSnapshots: Array<{ snapshotJson?: string }>
+    syncBatches: unknown[]
     syncEvents: Array<{ status: string }>
   } = {
     messages: [],
+    sessions: [],
     sourceSnapshots,
+    syncBatches,
     syncEvents,
     createCaptureClient: async () => pairedClient,
-    createSyncBatch: async () => ({ id: `scb_${syncEvents.length + 1}` }),
+    createSyncBatch: async (input) => {
+      syncBatches.push(input)
+      return { id: `scb_${syncBatches.length}` }
+    },
     ensureCaptureProvider: async (input) => {
       const existing = providers.get(input.providerKey)
       if (existing) return existing
@@ -233,12 +303,15 @@ function createInMemoryStore() {
     },
     upsertCapturedSession: async (input) => {
       const existing = sessions.get(input.sourceSessionKey)
+      const inputWithMetadata = input as typeof input & { metadataJson?: string }
       const session = {
         id: existing?.id ?? `cps_${sessions.size + 1}`,
         sourceSessionKey: input.sourceSessionKey,
+        ...(inputWithMetadata.metadataJson ? { metadataJson: inputWithMetadata.metadataJson } : {}),
         ...(input.title ? { title: input.title } : {}),
       }
       sessions.set(input.sourceSessionKey, session)
+      store.sessions = Array.from(sessions.values())
       return session
     },
   }

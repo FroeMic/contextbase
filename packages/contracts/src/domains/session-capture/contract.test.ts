@@ -54,6 +54,16 @@ describe("session capture contracts", () => {
           sourceMessageId: "msg-1",
         },
       ],
+      observation: {
+        latestBoundarySeen: true,
+        latestObservedMessageKey: "msg-1",
+        observationReason: "initial_load",
+        observedAt: "2026-06-25T16:25:00.000Z",
+        observedMessageKeys: ["msg-1"],
+        oldestBoundarySeen: false,
+        syncMode: "automatic",
+        visibleMessageCount: 1,
+      },
     })
     const response = Schema.decodeUnknownSync(SessionCaptureManualSyncResponseSchema)({
       data: {
@@ -68,6 +78,8 @@ describe("session capture contracts", () => {
 
     expect(body.session.kind).toBe("chat")
     expect(body.messages?.[0]?.role).toBe("user")
+    expect(body.observation?.syncMode).toBe("automatic")
+    expect(body.observation?.latestBoundarySeen).toBe(true)
     expect(response.data.syncStatus).toBe("accepted")
   })
 })

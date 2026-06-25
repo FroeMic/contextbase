@@ -186,6 +186,68 @@ describe("session capture routes", () => {
     expect(store.syncEvents).toHaveLength(2)
   })
 
+  test("accepts automatic sync observation metadata through the existing sync endpoint", async () => {
+    const sessions: unknown[] = []
+    const app = createApiApp({
+      sessionCaptureStore: {
+        ...routeStore(),
+        upsertCapturedSession: async (input) => {
+          sessions.push(input)
+          return {
+            id: "cps_123",
+            sourceSessionKey: input.sourceSessionKey,
+          }
+        },
+      },
+    })
+
+    const response = await app.request("/api/v1/session-capture/sync/manual", {
+      body: JSON.stringify({
+        observation: {
+          latestBoundarySeen: true,
+          latestObservedMessageKey: "msg-1",
+          observationReason: "initial_load",
+          observedAt: "2026-06-25T16:25:00.000Z",
+          observedMessageKeys: ["msg-1"],
+          oldestBoundarySeen: false,
+          syncMode: "automatic",
+          visibleMessageCount: 1,
+        },
+        provider: { displayName: "ChatGPT", providerKey: "chatgpt" },
+        session: {
+          kind: "chat",
+          sourceSessionId: "chat-1",
+          sourceUrl: "https://chatgpt.com/c/chat-1",
+        },
+        messages: [
+          {
+            contentText: "Hello",
+            role: "user",
+            sequenceNumber: "000001",
+            sourceMessageId: "msg-1",
+          },
+        ],
+      }),
+      headers: {
+        authorization: "Bearer capture-token",
+        "content-type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    expect(
+      JSON.parse((sessions[0] as { metadataJson?: string }).metadataJson ?? "{}"),
+    ).toMatchObject({
+      sessionCaptureObservation: {
+        latestBoundarySeen: true,
+        observationReason: "initial_load",
+        observedMessageKeys: ["msg-1"],
+        syncMode: "automatic",
+      },
+    })
+  })
+
   test("rejects capture clients without write permission", async () => {
     const response = await createApiApp({
       sessionCaptureStore: {

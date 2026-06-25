@@ -56,6 +56,7 @@ export function extractChatGptSession(document: Document, url: URL): ExtractedSe
 export function toManualSyncPayload(extracted: ExtractedSession): SessionCaptureManualSyncBody {
   return {
     messages: extracted.messages,
+    ...(extracted.observation ? { observation: extracted.observation } : {}),
     parserVersion: extracted.parserVersion,
     provider: extracted.provider,
     session: extracted.session,

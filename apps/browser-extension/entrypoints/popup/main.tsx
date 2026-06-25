@@ -7,6 +7,7 @@ import {
   type ExtensionConfig,
   getExtensionConfig,
   pairCaptureClient,
+  saveAutoSyncEnabled,
   saveCaptureTokenConfig,
 } from "../../src/storage"
 import "./popup.css"
@@ -61,7 +62,26 @@ function PopupApp() {
             <strong>{config.apiBaseUrl}</strong>
             <span>Token</span>
             <strong>{config.captureToken.slice(0, 4)}...stored</strong>
+            <span>Auto sync</span>
+            <strong>{config.autoSyncEnabled ? "On" : "Off"}</strong>
           </section>
+
+          <label className="toggle-row">
+            <input
+              checked={config.autoSyncEnabled}
+              onChange={(event) =>
+                void run("Updating automatic sync...", async () => {
+                  await saveAutoSyncEnabled(storage, event.target.checked)
+                  await refreshConfig(storage, setConfig, setApiBaseUrl, setStatus)
+                  return event.target.checked
+                    ? "Automatic sync enabled."
+                    : "Automatic sync disabled."
+                })
+              }
+              type="checkbox"
+            />
+            <span>Automatic sync</span>
+          </label>
 
           <div className="actions">
             <button
@@ -197,7 +217,7 @@ async function refreshConfig(
     setStatus(
       `Connected to ${nextConfig.apiBaseUrl}${
         nextConfig.lastSync ? `; last sync ${nextConfig.lastSync.status}` : ""
-      }`,
+      }; automatic sync ${nextConfig.autoSyncEnabled ? "on" : "off"}`,
     )
   }
 }

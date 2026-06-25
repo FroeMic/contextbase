@@ -2,6 +2,7 @@ import type {
   CapturedMessageRole,
   SessionCaptureManualSyncBody,
   SessionCaptureMessageInput,
+  SessionCaptureObservationInput,
   SessionCaptureProviderInput,
   SessionCaptureSessionInput,
   SessionCaptureSourceSnapshotInput,
@@ -18,6 +19,7 @@ export type ExtractedMessage = SessionCaptureMessageInput & {
 
 export type ExtractedSession = {
   messages: ExtractedMessage[]
+  observation?: SessionCaptureObservationInput
   parserVersion: string
   provider: SessionCaptureProviderInput
   session: SessionCaptureSessionInput

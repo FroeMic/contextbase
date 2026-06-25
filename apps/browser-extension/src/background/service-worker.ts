@@ -1,16 +1,53 @@
+import {
+  AUTOMATIC_SESSION_OBSERVED,
+  type AutomaticSessionObservedMessage,
+  createAutomaticSyncController,
+} from "../automatic-sync"
 import { createCaptureFlowController, type ExtractCurrentSessionMessage } from "../extension-flow"
-import { chromeStorageArea, getExtensionConfig, saveLastSyncStatus } from "../storage"
+import {
+  chromeStorageArea,
+  getAcceptedAutoSyncFingerprint,
+  getExtensionConfig,
+  saveAcceptedAutoSyncFingerprint,
+  saveLastSyncStatus,
+} from "../storage"
 import { syncExtractedSession } from "../sync"
 
 const CAPTURE_ACTIVE_TAB = "contextbase.captureActiveTab"
 
-type RuntimeMessage = {
-  tabId?: number
-  type: typeof CAPTURE_ACTIVE_TAB
-}
+type RuntimeMessage =
+  | {
+      tabId?: number
+      type: typeof CAPTURE_ACTIVE_TAB
+    }
+  | AutomaticSessionObservedMessage
+
+const storage = chromeStorageArea(chrome.storage.local)
+const automaticSyncController = createAutomaticSyncController({
+  getAcceptedFingerprint: (key) => getAcceptedAutoSyncFingerprint(storage, key),
+  getConfig: () => getExtensionConfig(storage),
+  saveAcceptedFingerprint: (key, fingerprint) =>
+    saveAcceptedAutoSyncFingerprint(storage, key, fingerprint),
+  saveLastSyncStatus: (status) => saveLastSyncStatus(storage, status),
+  syncExtractedSession,
+})
 
 chrome.runtime.onMessage.addListener(
   (message: RuntimeMessage, _sender, sendResponse: (response: unknown) => void) => {
+    if (message.type === AUTOMATIC_SESSION_OBSERVED) {
+      automaticSyncController
+        .handleObservedSession(message)
+        .then(sendResponse)
+        .catch((error) => {
+          sendResponse({
+            error: error instanceof Error ? error.message : "Automatic sync failed",
+            ok: false,
+          })
+        })
+
+      return true
+    }
+
     if (message.type !== CAPTURE_ACTIVE_TAB) return false
 
     captureActiveTab(message.tabId)
@@ -27,7 +64,6 @@ chrome.runtime.onMessage.addListener(
 )
 
 async function captureActiveTab(tabId?: number) {
-  const storage = chromeStorageArea(chrome.storage.local)
   const controller = createCaptureFlowController({
     getActiveTab: async () => {
       if (tabId !== undefined) {

@@ -54,9 +54,11 @@ export type SessionCaptureStore = {
     workspaceSlug: string
   }) => Promise<CaptureClientRecord>
   createSyncBatch?: (input: {
+    artifactCount: number
     captureClientId: string
     capturedSessionId?: string
     idempotencyKey: string
+    messageCount: number
     parserVersion?: string
     providerId?: string
     status: "accepted" | "failed" | "rejected"
@@ -100,6 +102,7 @@ export type ManualSyncBatchInput = {
   artifacts?: ManualSyncArtifactInput[]
   idempotencyKey?: string
   messages?: ManualSyncMessageInput[]
+  observation?: ManualSyncObservationInput
   parserVersion?: string
   provider: {
     displayName: string
@@ -119,6 +122,18 @@ export type ManualSyncBatchInput = {
     snapshotJson?: string
     sourceUrl?: string
   }
+}
+
+export type ManualSyncObservationInput = {
+  latestBoundarySeen?: boolean
+  latestObservedMessageKey?: string
+  observationReason: "initial_load" | "mutation" | "scroll" | "manual_force" | "retry"
+  observedAt?: Date
+  observedMessageKeys?: string[]
+  oldestBoundarySeen?: boolean
+  oldestObservedMessageKey?: string
+  syncMode: "manual" | "automatic"
+  visibleMessageCount?: number
 }
 
 export type ManualSyncMessageInput = {
@@ -151,6 +166,7 @@ export type NormalizedSessionInput = {
   firstCapturedAt?: Date
   kind: ManualSyncBatchInput["session"]["kind"]
   lastSyncedAt: Date
+  metadataJson?: string
   providerId: string
   sourceSessionId?: string
   sourceSessionKey: string
@@ -322,6 +338,8 @@ export function ingestManualSyncBatch(
         input.provider.providerKey,
         input.session.sourceUrl,
       )
+      const messageCount = input.messages?.length ?? 0
+      const artifactCount = input.artifacts?.length ?? 0
       const session = await required(
         store.upsertCapturedSession,
         "upsert captured session",
@@ -334,6 +352,7 @@ export function ingestManualSyncBatch(
         sourceUrl: input.session.sourceUrl,
         workspaceId: captureClient.workspaceId,
         workspaceSlug: captureClient.workspaceSlug,
+        ...(input.observation ? { metadataJson: observationMetadataJson(input.observation) } : {}),
         ...(input.session.sourceSessionId
           ? { sourceSessionId: input.session.sourceSessionId }
           : {}),
@@ -350,15 +369,15 @@ export function ingestManualSyncBatch(
             sourceSessionKey,
             now.toISOString(),
           ]),
+        artifactCount,
+        messageCount,
         providerId: provider.id,
         status: "accepted",
         workspaceId: captureClient.workspaceId,
         ...(input.parserVersion ? { parserVersion: input.parserVersion } : {}),
       })
 
-      let messageCount = 0
       for (const message of input.messages ?? []) {
-        messageCount += 1
         await required(
           store.upsertCapturedMessage,
           "upsert captured message",
@@ -391,9 +410,7 @@ export function ingestManualSyncBatch(
         })
       }
 
-      let artifactCount = 0
       for (const artifact of input.artifacts ?? []) {
-        artifactCount += 1
         await store.upsertCapturedArtifact?.({
           artifactKind: artifact.artifactKind,
           capturedSessionId: session.id,
@@ -453,6 +470,34 @@ export function ingestManualSyncBatch(
       }
     },
     catch: preserveCaptureError("Failed to ingest manual sync batch"),
+  })
+}
+
+function observationMetadataJson(observation: ManualSyncObservationInput) {
+  return JSON.stringify({
+    sessionCaptureObservation: {
+      observationReason: observation.observationReason,
+      syncMode: observation.syncMode,
+      ...(observation.latestBoundarySeen !== undefined
+        ? { latestBoundarySeen: observation.latestBoundarySeen }
+        : {}),
+      ...(observation.latestObservedMessageKey
+        ? { latestObservedMessageKey: observation.latestObservedMessageKey }
+        : {}),
+      ...(observation.observedAt ? { observedAt: observation.observedAt.toISOString() } : {}),
+      ...(observation.observedMessageKeys
+        ? { observedMessageKeys: observation.observedMessageKeys }
+        : {}),
+      ...(observation.oldestBoundarySeen !== undefined
+        ? { oldestBoundarySeen: observation.oldestBoundarySeen }
+        : {}),
+      ...(observation.oldestObservedMessageKey
+        ? { oldestObservedMessageKey: observation.oldestObservedMessageKey }
+        : {}),
+      ...(observation.visibleMessageCount !== undefined
+        ? { visibleMessageCount: observation.visibleMessageCount }
+        : {}),
+    },
   })
 }
 
