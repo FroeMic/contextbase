@@ -86,6 +86,7 @@ export type CapturedArtifactKind = typeof CapturedArtifactKindSchema.Type
 export const SessionCaptureArtifactInputSchema = Schema.Struct({
   artifactKind: CapturedArtifactKindSchema,
   capturedMessageId: Schema.optional(Schema.String),
+  capturedMessageSourceKey: Schema.optional(Schema.String),
   contentType: Schema.optional(Schema.String),
   fileObjectId: Schema.optional(Schema.String),
   metadataJson: Schema.optional(Schema.String),
@@ -94,6 +95,19 @@ export const SessionCaptureArtifactInputSchema = Schema.Struct({
   title: Schema.optional(Schema.String),
 })
 export type SessionCaptureArtifactInput = typeof SessionCaptureArtifactInputSchema.Type
+
+export const SessionCaptureFileUploadResultSchema = Schema.Struct({
+  contentType: Schema.String,
+  fileObjectId: Schema.String,
+  originalFilename: Schema.String,
+  storageStatus: Schema.Literal("available"),
+})
+export type SessionCaptureFileUploadResult = typeof SessionCaptureFileUploadResultSchema.Type
+
+export const SessionCaptureFileUploadResponseSchema = SuccessEnvelopeSchema(
+  SessionCaptureFileUploadResultSchema,
+)
+export type SessionCaptureFileUploadResponse = SuccessEnvelope<SessionCaptureFileUploadResult>
 
 export const SessionCaptureSourceSnapshotInputSchema = Schema.Struct({
   capturedAt: Schema.optional(Schema.String),

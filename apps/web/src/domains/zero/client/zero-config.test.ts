@@ -39,7 +39,7 @@ describe("Zero client config", () => {
     expect(options).toMatchObject({
       auth: undefined,
       cacheURL: "http://localhost:4817",
-      storageKey: "usr_123:ses_123:wrk_123",
+      storageKey: "contextbase-zero-v2:usr_123:ses_123:wrk_123",
       userID: "usr_123",
     })
     expect(options).not.toHaveProperty("mutateURL")

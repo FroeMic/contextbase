@@ -2,7 +2,7 @@ import type { schema, ZeroAuthContext } from "@contextbase/zero-schema"
 import { Zero } from "@rocicorp/zero"
 
 import type { AuthSession } from "../../auth/client/auth-api"
-import { buildZeroOptions } from "./zero-config"
+import { buildZeroOptions, buildZeroStorageKey } from "./zero-config"
 
 export type BrowserZeroClient = Zero<typeof schema, undefined, ZeroAuthContext>
 
@@ -40,7 +40,7 @@ export function closeBrowserZero(session: AuthSession) {
 }
 
 function zeroStorageKey(session: AuthSession) {
-  return [session.userId, session.sessionId, session.activeWorkspaceId].join(":")
+  return buildZeroStorageKey(session)
 }
 
 function resetBrowserZero(key: string, zero: BrowserZeroClient) {

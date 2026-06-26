@@ -46,6 +46,13 @@ declare namespace chrome {
     const local: StorageArea
   }
 
+  namespace scripting {
+    function executeScript(details: {
+      files: string[]
+      target: { tabId: number }
+    }): Promise<unknown>
+  }
+
   namespace tabs {
     type Tab = {
       id?: number
@@ -62,6 +69,7 @@ declare namespace chrome {
 
 declare const chrome: {
   runtime: typeof chrome.runtime
+  scripting: typeof chrome.scripting
   storage: typeof chrome.storage
   tabs: typeof chrome.tabs
 }

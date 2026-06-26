@@ -27,6 +27,8 @@ export type CaptureClientAuthContext = {
   authKind: "capture_client"
   captureClientId: string
   permissions: CaptureClientPermission[]
+  principalId: string
+  principalKind: "capture_client"
   role: "capture_client"
   workspaceId: string
   workspaceSlug: string
@@ -151,6 +153,7 @@ export type ManualSyncMessageInput = {
 export type ManualSyncArtifactInput = {
   artifactKind: "code" | "file" | "image" | "link" | "attachment" | "unknown"
   capturedMessageId?: string
+  capturedMessageSourceKey?: string
   contentType?: string
   fileObjectId?: string
   metadataJson?: string
@@ -280,6 +283,8 @@ export function authenticateCaptureClient(
         authKind: "capture_client" as const,
         captureClientId: client.id,
         permissions: client.permission,
+        principalId: client.id,
+        principalKind: "capture_client" as const,
         role: "capture_client" as const,
         workspaceId: client.workspaceId,
         workspaceSlug: client.workspaceSlug,
@@ -377,8 +382,16 @@ export function ingestManualSyncBatch(
         ...(input.parserVersion ? { parserVersion: input.parserVersion } : {}),
       })
 
+      const capturedMessageIdsBySourceKey = new Map<string, string>()
       for (const message of input.messages ?? []) {
-        await required(
+        const sourceMessageKey = normalizeSourceKey(
+          message.sourceMessageKey,
+          message.sourceMessageId,
+          message.role,
+          message.sequenceNumber,
+          message.contentText ?? message.contentJson ?? "",
+        )
+        const capturedMessage = await required(
           store.upsertCapturedMessage,
           "upsert captured message",
         )({
@@ -394,13 +407,7 @@ export function ingestManualSyncBatch(
               message.contentText ?? "",
               message.contentJson ?? "",
             ]),
-          sourceMessageKey: normalizeSourceKey(
-            message.sourceMessageKey,
-            message.sourceMessageId,
-            message.role,
-            message.sequenceNumber,
-            message.contentText ?? message.contentJson ?? "",
-          ),
+          sourceMessageKey,
           workspaceId: captureClient.workspaceId,
           ...(message.contentJson ? { contentJson: message.contentJson } : {}),
           ...(message.contentText ? { contentText: message.contentText } : {}),
@@ -408,9 +415,15 @@ export function ingestManualSyncBatch(
           ...(message.sourceCreatedAt ? { sourceCreatedAt: message.sourceCreatedAt } : {}),
           ...(message.sourceMessageId ? { sourceMessageId: message.sourceMessageId } : {}),
         })
+        capturedMessageIdsBySourceKey.set(sourceMessageKey, capturedMessage.id)
       }
 
       for (const artifact of input.artifacts ?? []) {
+        const capturedMessageId =
+          artifact.capturedMessageId ??
+          (artifact.capturedMessageSourceKey
+            ? capturedMessageIdsBySourceKey.get(artifact.capturedMessageSourceKey)
+            : undefined)
         await store.upsertCapturedArtifact?.({
           artifactKind: artifact.artifactKind,
           capturedSessionId: session.id,
@@ -421,7 +434,7 @@ export function ingestManualSyncBatch(
             artifact.title ?? "",
           ),
           workspaceId: captureClient.workspaceId,
-          ...(artifact.capturedMessageId ? { capturedMessageId: artifact.capturedMessageId } : {}),
+          ...(capturedMessageId ? { capturedMessageId } : {}),
           ...(artifact.contentType ? { contentType: artifact.contentType } : {}),
           ...(artifact.fileObjectId ? { fileObjectId: artifact.fileObjectId } : {}),
           ...(artifact.metadataJson ? { metadataJson: artifact.metadataJson } : {}),

@@ -2,6 +2,7 @@ import type {
   CaptureClientRecord,
   SessionCaptureStore,
 } from "@contextbase/core/domains/session-capture/service"
+import { Effect } from "effect"
 import { describe, expect, test } from "vitest"
 
 import { createApiApp } from "../../app"
@@ -272,6 +273,91 @@ describe("session capture routes", () => {
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toMatchObject({
       error: { code: "forbidden" },
+      ok: false,
+    })
+  })
+
+  test("uploads image files with a capture-client token", async () => {
+    const uploads: unknown[] = []
+    const app = createApiApp({
+      fileStorage: {
+        deleteObject: () => Effect.void,
+        getObject: () => Effect.fail(new Error("unused") as never),
+        headObject: () => Effect.succeed({ exists: true }),
+        id: "local_disk",
+        putObject: (input) => {
+          uploads.push(input)
+          return Effect.void
+        },
+      },
+      fileStore: {
+        createPendingWorkspaceFileObject: async (_context, input) => ({
+          id: "file_image",
+          ...input,
+        }),
+        finalizeWorkspaceFileUpload: async (_context, input) => input,
+      },
+      sessionCaptureStore: routeStore(),
+    })
+    const form = new FormData()
+    form.set("file", new File([new Uint8Array([1, 2, 3])], "screenshot.png", { type: "image/png" }))
+    form.set("sourceArtifactKey", "img-1")
+
+    const response = await app.request("/api/v1/session-capture/files", {
+      body: form,
+      headers: { authorization: "Bearer capture-token" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      data: {
+        contentType: "image/png",
+        fileObjectId: "file_image",
+        originalFilename: "screenshot.png",
+        storageStatus: "available",
+      },
+      ok: true,
+    })
+    expect(uploads).toEqual([
+      expect.objectContaining({
+        contentLength: 3,
+        contentType: "image/png",
+        objectKey: "workspaces/wrk_123/files/file_image/original",
+      }),
+    ])
+  })
+
+  test("rejects unsupported capture-client image uploads", async () => {
+    const app = createApiApp({
+      fileStorage: {
+        deleteObject: () => Effect.void,
+        getObject: () => Effect.fail(new Error("unused") as never),
+        headObject: () => Effect.succeed({ exists: false }),
+        id: "local_disk",
+        putObject: () => Effect.void,
+      },
+      fileStore: {
+        createPendingWorkspaceFileObject: async () => ({ id: "file_text" }),
+        finalizeWorkspaceFileUpload: async (_context, input) => input,
+      },
+      sessionCaptureStore: routeStore(),
+    })
+    const form = new FormData()
+    form.set("file", new File(["hello"], "note.txt", { type: "text/plain" }))
+
+    const response = await app.request("/api/v1/session-capture/files", {
+      body: form,
+      headers: { authorization: "Bearer capture-token" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: "invalid_request",
+        message: "Uploaded file content type is not allowed.",
+      },
       ok: false,
     })
   })

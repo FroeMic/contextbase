@@ -12,6 +12,7 @@ import {
   saveLastSyncStatus,
 } from "../storage"
 import { syncExtractedSession } from "../sync"
+import { sendTabMessageWithContentScriptRecovery } from "./manual-capture-messaging"
 
 const CAPTURE_ACTIVE_TAB = "contextbase.captureActiveTab"
 
@@ -74,7 +75,15 @@ async function captureActiveTab(tabId?: number) {
     },
     getConfig: () => getExtensionConfig(storage),
     sendTabMessage: (tabId, message: ExtractCurrentSessionMessage) =>
-      chrome.tabs.sendMessage(tabId, message) as Promise<never>,
+      sendTabMessageWithContentScriptRecovery(
+        {
+          executeScript: (details) => chrome.scripting.executeScript(details),
+          sendMessage: (tabId, message) =>
+            chrome.tabs.sendMessage(tabId, message) as Promise<never>,
+        },
+        tabId,
+        message,
+      ),
     syncExtractedSession: async (config, extracted) => {
       const result = await syncExtractedSession(config, extracted)
       await saveLastSyncStatus(

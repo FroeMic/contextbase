@@ -1,5 +1,6 @@
 import type {
   CapturedMessageRole,
+  SessionCaptureArtifactInput,
   SessionCaptureManualSyncBody,
   SessionCaptureMessageInput,
   SessionCaptureObservationInput,
@@ -17,7 +18,19 @@ export type ExtractedMessage = SessionCaptureMessageInput & {
   role: CapturedMessageRole
 }
 
+export type ExtractedImageData = {
+  bytes: Uint8Array | number[] | Record<string, number>
+  contentType: string
+  filename: string
+}
+
+export type ExtractedArtifact = SessionCaptureArtifactInput & {
+  imageFetchUrl?: string
+  imageData?: ExtractedImageData
+}
+
 export type ExtractedSession = {
+  artifacts?: ExtractedArtifact[]
   messages: ExtractedMessage[]
   observation?: SessionCaptureObservationInput
   parserVersion: string

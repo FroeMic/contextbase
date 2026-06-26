@@ -94,10 +94,12 @@ export function createApiApp(options: CreateApiAppOptions = {}) {
 
   if (options.fileStore) {
     fileDependencies.fileStore = options.fileStore
+    sessionCaptureDependencies.fileStore = options.fileStore
   }
 
   if (options.fileStorage) {
     fileDependencies.fileStorage = options.fileStorage
+    sessionCaptureDependencies.fileStorage = options.fileStorage
   }
 
   if (options.uploadsPublicBaseUrl) {
@@ -270,7 +272,8 @@ function isCaptureClientAuthenticatedRoute(request: Request) {
   const url = new URL(request.url)
   return (
     request.method.toUpperCase() === "POST" &&
-    url.pathname === "/api/v1/session-capture/sync/manual"
+    (url.pathname === "/api/v1/session-capture/sync/manual" ||
+      url.pathname === "/api/v1/session-capture/files")
   )
 }
 

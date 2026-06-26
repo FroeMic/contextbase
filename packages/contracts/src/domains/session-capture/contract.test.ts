@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest"
 import {
   CaptureClientPairBodySchema,
   CaptureClientPairResponseSchema,
+  SessionCaptureFileUploadResponseSchema,
   SessionCaptureManualSyncBodySchema,
   SessionCaptureManualSyncResponseSchema,
 } from "./contract.js"
@@ -64,6 +65,16 @@ describe("session capture contracts", () => {
         syncMode: "automatic",
         visibleMessageCount: 1,
       },
+      artifacts: [
+        {
+          artifactKind: "image",
+          capturedMessageSourceKey: "msg-1",
+          contentType: "image/png",
+          fileObjectId: "file_image",
+          sourceArtifactKey: "img-1",
+          title: "Screenshot",
+        },
+      ],
     })
     const response = Schema.decodeUnknownSync(SessionCaptureManualSyncResponseSchema)({
       data: {
@@ -77,9 +88,25 @@ describe("session capture contracts", () => {
     })
 
     expect(body.session.kind).toBe("chat")
+    expect(body.artifacts?.[0]?.capturedMessageSourceKey).toBe("msg-1")
     expect(body.messages?.[0]?.role).toBe("user")
     expect(body.observation?.syncMode).toBe("automatic")
     expect(body.observation?.latestBoundarySeen).toBe(true)
     expect(response.data.syncStatus).toBe("accepted")
+  })
+
+  test("decodes capture-client image upload response envelopes", () => {
+    const response = Schema.decodeUnknownSync(SessionCaptureFileUploadResponseSchema)({
+      data: {
+        contentType: "image/png",
+        fileObjectId: "file_image",
+        originalFilename: "screenshot.png",
+        storageStatus: "available",
+      },
+      ok: true,
+    })
+
+    expect(response.data.fileObjectId).toBe("file_image")
+    expect(response.data.contentType).toBe("image/png")
   })
 })

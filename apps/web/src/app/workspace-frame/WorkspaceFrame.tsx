@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, useMatches, useNavigate } from "@tanstack/react-router"
-import { Check, ChevronDown, Database, LogOut, Settings } from "lucide-react"
+import { Check, ChevronDown, Database, LogOut, MessageSquareText, Settings } from "lucide-react"
 import { useMemo } from "react"
 
 import { PostHogBrowserIdentity } from "../../domains/analytics/PostHogBrowserIdentity"
@@ -8,6 +8,7 @@ import { resetPostHogBrowserSession } from "../../domains/analytics/posthog-clie
 import type { AuthSession } from "../../domains/auth/client/auth-api"
 import { logout } from "../../domains/auth/client/auth-api"
 import { sessionQueryKey } from "../../domains/auth/client/use-session"
+import { CapturedChatsSidebarSection } from "../../domains/captured-chats/components"
 import { FeatureFlagProvider } from "../../domains/feature-flags/client/FeatureFlagProvider"
 import { settingsQueryKeys } from "../../domains/settings/client/settings-query-options"
 import { ZeroClientProvider } from "../../domains/zero/client/ZeroClientProvider"
@@ -155,9 +156,24 @@ function WorkspaceSidebar({
                   <span>Overview</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      params={{ workspaceSlug: activeWorkspaceSlug }}
+                      preload="intent"
+                      to="/app/$workspaceSlug/chats"
+                    />
+                  }
+                >
+                  <MessageSquareText />
+                  <span>Chats</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <CapturedChatsSidebarSection workspaceSlug={activeWorkspaceSlug} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -51,16 +51,20 @@ test.describe("manual capture extension flow", () => {
                       Hello from the E2E fixture
                     </div>
                   </article>
-                  <article data-testid="conversation-turn-2">
-                    <div data-message-author-role="assistant" data-message-id="msg-assistant-e2e">
-                      Captured by the extension
-                    </div>
-                  </article>
+                  <div data-testid="canvas-thread-output">
+                    <img src="https://images.example/1772517912913.webp" alt="1772517912913.webp" />
+                  </div>
                 </main>
               </body>
             </html>
           `,
           contentType: "text/html",
+        }),
+      )
+      await context.route("https://images.example/1772517912913.webp", (route) =>
+        route.fulfill({
+          body: Buffer.from([1, 2, 3]),
+          contentType: "image/webp",
         }),
       )
 
@@ -107,6 +111,17 @@ test.describe("manual capture extension flow", () => {
       })
       expect(syncRequests).toHaveLength(1)
       expect(syncRequests[0]).toMatchObject({
+        artifacts: [
+          {
+            artifactKind: "image",
+            capturedMessageSourceKey: "chatgpt:000002:assistant:generated-image",
+            fileObjectId: "file_e2e_image",
+            sourceArtifactKey: expect.stringContaining(
+              "chatgpt:000002:assistant:generated-image:image:0:https://images.example/1772517912913.webp",
+            ),
+            title: "1772517912913.webp",
+          },
+        ],
         messages: [
           {
             contentText: "Hello from the E2E fixture",
@@ -115,10 +130,9 @@ test.describe("manual capture extension flow", () => {
             sourceMessageId: "msg-user-e2e",
           },
           {
-            contentText: "Captured by the extension",
             role: "assistant",
             sequenceNumber: "000002",
-            sourceMessageId: "msg-assistant-e2e",
+            sourceMessageKey: "chatgpt:000002:assistant:generated-image",
           },
         ],
         provider: { providerKey: "chatgpt" },
@@ -283,6 +297,29 @@ test.describe("manual capture extension flow", () => {
 
 async function startFakeContextbaseApi(syncRequests: unknown[]) {
   const server = createServer((request, response) => {
+    if (request.method === "POST" && request.url === "/api/v1/session-capture/files") {
+      if (request.headers.authorization !== "Bearer cbc_e2e_capture") {
+        response.writeHead(401).end()
+        return
+      }
+      request.resume()
+      request.on("end", () => {
+        response.writeHead(201, { "content-type": "application/json" })
+        response.end(
+          JSON.stringify({
+            data: {
+              contentType: "image/png",
+              fileObjectId: "file_e2e_image",
+              originalFilename: "tiny-fixture-image.png",
+              storageStatus: "available",
+            },
+            ok: true,
+          }),
+        )
+      })
+      return
+    }
+
     if (request.method !== "POST" || request.url !== "/api/v1/session-capture/sync/manual") {
       response.writeHead(404).end()
       return

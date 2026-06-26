@@ -85,6 +85,60 @@ describe("automatic sync", () => {
     expect(statuses).toHaveLength(1)
   })
 
+  test("syncs again when unchanged messages gain extracted artifacts", async () => {
+    const synced: ExtractedSession[] = []
+    const controller = createAutomaticSyncController({
+      getConfig: async () => ({
+        apiBaseUrl: "http://127.0.0.1:3017",
+        autoSyncEnabled: true,
+        captureToken: "cbc_capture",
+      }),
+      saveLastSyncStatus: async () => undefined,
+      syncExtractedSession: async (_config, session) => {
+        synced.push(session)
+        return {
+          artifactCount: session.artifacts?.length ?? 0,
+          capturedSessionId: "cps_123",
+          messageCount: session.messages.length,
+          ok: true,
+          syncStatus: "accepted",
+        }
+      },
+    })
+    const withoutArtifacts = withAutomaticObservation(extracted, "initial_load")
+    const withArtifacts = withAutomaticObservation(
+      {
+        ...extracted,
+        artifacts: [
+          {
+            artifactKind: "image",
+            capturedMessageSourceKey: "msg-1",
+            contentType: "image/webp",
+            fileObjectId: "file_123",
+            sourceArtifactKey: "msg-1:image:0:https://images.example/1772517912913.webp",
+            title: "1772517912913.webp",
+          },
+        ],
+      },
+      "mutation",
+    )
+
+    await expect(
+      controller.handleObservedSession({
+        extracted: withoutArtifacts,
+        type: AUTOMATIC_SESSION_OBSERVED,
+      }),
+    ).resolves.toEqual({ ok: true, skipped: false })
+    await expect(
+      controller.handleObservedSession({
+        extracted: withArtifacts,
+        type: AUTOMATIC_SESSION_OBSERVED,
+      }),
+    ).resolves.toEqual({ ok: true, skipped: false })
+
+    expect(synced).toHaveLength(2)
+  })
+
   test("uses persisted accepted fingerprints after controller recreation", async () => {
     const fingerprints = new Map<string, string>()
     const syncCalls: ExtractedSession[] = []

@@ -7,6 +7,8 @@ type ZeroEndpointConfig = {
   cacheURL?: string
 }
 
+export const ZERO_BROWSER_STORAGE_VERSION = "contextbase-zero-v2"
+
 export function buildZeroContext(session: AuthSession): ZeroAuthContext {
   return {
     activeWorkspaceId: session.activeWorkspaceId,
@@ -30,9 +32,18 @@ export function buildZeroOptions(
     context: buildZeroContext(session),
     logLevel: import.meta.env.DEV ? "info" : "error",
     schema,
-    storageKey: [session.userId, session.sessionId, session.activeWorkspaceId].join(":"),
+    storageKey: buildZeroStorageKey(session),
     userID: session.userId,
   }
+}
+
+export function buildZeroStorageKey(session: AuthSession) {
+  return [
+    ZERO_BROWSER_STORAGE_VERSION,
+    session.userId,
+    session.sessionId,
+    session.activeWorkspaceId,
+  ].join(":")
 }
 
 function configuredCacheUrl() {

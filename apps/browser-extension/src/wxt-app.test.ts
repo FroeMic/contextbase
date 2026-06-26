@@ -22,6 +22,22 @@ describe("WXT React extension app", () => {
     expect(packageJson.devDependencies).toHaveProperty("wxt")
   })
 
+  test("has permission to recover content scripts for already-open ChatGPT tabs", () => {
+    const configSource = readFileSync(resolve(appRoot, "wxt.config.ts"), "utf8")
+
+    expect(configSource).toContain('"scripting"')
+  })
+
+  test("keeps hydrated image bytes out of Chrome runtime content-script messages", () => {
+    const contentScriptSource = readFileSync(
+      resolve(appRoot, "src/content-scripts/chatgpt.ts"),
+      "utf8",
+    )
+
+    expect(contentScriptSource).not.toContain("hydrateChatGptImageArtifacts(")
+    expect(contentScriptSource).toContain("extractChatGptSession(document")
+  })
+
   test("keeps WXT entrypoints and E2E tests checked in", () => {
     expect(existsSync(resolve(appRoot, "wxt.config.ts"))).toBe(true)
     expect(existsSync(resolve(appRoot, "entrypoints/background.ts"))).toBe(true)

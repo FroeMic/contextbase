@@ -16,6 +16,8 @@ describe("workspace app route tree", () => {
       "app/route.tsx",
       "app/$workspaceSlug/route.tsx",
       "app/$workspaceSlug/index.tsx",
+      "app/$workspaceSlug/chats/index.tsx",
+      "app/$workspaceSlug/chats/$capturedSessionId.tsx",
       "app/$workspaceSlug/settings/route.tsx",
       "app/$workspaceSlug/settings/index.tsx",
     ]
@@ -51,6 +53,22 @@ describe("workspace app route tree", () => {
     expect(settingsIndexRoute).toContain('createFileRoute("/app/$workspaceSlug/settings/")')
     expect(settingsRoute).not.toContain("businessSlug")
     expect(settingsIndexRoute).not.toContain("businessSlug")
+  })
+
+  test("captured chats routes are under the app workspace tree", () => {
+    const chatsIndexRoute = routeSource("app/$workspaceSlug/chats/index.tsx")
+    const chatsDetailRoute = routeSource("app/$workspaceSlug/chats/$capturedSessionId.tsx")
+
+    expect(chatsIndexRoute).toContain('createFileRoute("/app/$workspaceSlug/chats/")')
+    expect(chatsDetailRoute).toContain(
+      'createFileRoute("/app/$workspaceSlug/chats/$capturedSessionId")',
+    )
+
+    for (const source of [chatsIndexRoute, chatsDetailRoute]) {
+      expect(source).toContain("requireActiveWorkspaceSession")
+      expect(source).not.toContain("businessSlug")
+      expect(source).not.toContain("requireBusinessBootstrap")
+    }
   })
 
   test("workspace parent route lets settings own its shell", () => {

@@ -13,19 +13,21 @@ chrome.runtime.onMessage.addListener(
   (message: ExtractCurrentSessionMessage, _sender, sendResponse: (response: unknown) => void) => {
     if (message.type !== EXTRACT_CURRENT_SESSION) return false
 
-    try {
-      sendResponse({
-        extracted: extractChatGptSession(document, new URL(window.location.href)),
-        ok: true,
+    Promise.resolve(extractChatGptSession(document, new URL(window.location.href)))
+      .then((extracted) => {
+        sendResponse({
+          extracted,
+          ok: true,
+        })
       })
-    } catch (error) {
-      sendResponse({
-        error: error instanceof Error ? error.message : "Failed to extract ChatGPT session",
-        ok: false,
+      .catch((error) => {
+        sendResponse({
+          error: error instanceof Error ? error.message : "Failed to extract ChatGPT session",
+          ok: false,
+        })
       })
-    }
 
-    return false
+    return true
   },
 )
 

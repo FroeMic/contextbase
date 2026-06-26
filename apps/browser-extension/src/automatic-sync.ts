@@ -119,6 +119,15 @@ function sessionKey(extracted: ExtractedSession) {
 
 function observationFingerprint(extracted: ExtractedSession) {
   return JSON.stringify({
+    artifacts: (extracted.artifacts ?? []).map((artifact) => ({
+      capturedMessageSourceKey: artifact.capturedMessageSourceKey,
+      contentType: artifact.contentType,
+      fileObjectId: artifact.fileObjectId,
+      imageFetchUrl: artifact.imageFetchUrl,
+      key: artifact.sourceArtifactKey,
+      kind: artifact.artifactKind,
+      title: artifact.title,
+    })),
     coverage: {
       latestBoundarySeen: extracted.observation?.latestBoundarySeen,
       oldestBoundarySeen: extracted.observation?.oldestBoundarySeen,
@@ -130,6 +139,7 @@ function observationFingerprint(extracted: ExtractedSession) {
       role: message.role,
       sequenceNumber: message.sequenceNumber,
     })),
+    parserVersion: extracted.parserVersion,
   })
 }
 

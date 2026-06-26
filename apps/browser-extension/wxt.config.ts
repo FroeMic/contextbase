@@ -10,6 +10,7 @@ export default defineConfig({
     host_permissions: [
       "https://chatgpt.com/*",
       "https://chat.openai.com/*",
+      "https://*/*",
       "http://127.0.0.1/*",
       "http://localhost/*",
       "https://api.contextbase.localhost/*",
@@ -17,7 +18,7 @@ export default defineConfig({
       "https://api.contextbase-2.test/*",
     ],
     name: "Contextbase",
-    permissions: ["activeTab", "storage"],
+    permissions: ["activeTab", "scripting", "storage"],
     version: "0.1.0",
   },
   manifestVersion: 3,

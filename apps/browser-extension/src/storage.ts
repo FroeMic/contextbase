@@ -89,7 +89,7 @@ export async function getExtensionConfig(
     return null
   }
   return {
-    apiBaseUrl: values.apiBaseUrl,
+    apiBaseUrl: normalizeApiBaseUrl(values.apiBaseUrl),
     autoSyncEnabled: typeof values.autoSyncEnabled === "boolean" ? values.autoSyncEnabled : true,
     captureToken: values.captureToken,
     ...(isCaptureClient(values.client) ? { client: values.client } : {}),
@@ -182,7 +182,11 @@ export async function pairCaptureClient(
 }
 
 export function normalizeApiBaseUrl(value: string) {
-  return value.trim().replace(/\/+$/, "")
+  const normalized = value.trim().replace(/\/+$/, "")
+  if (normalized === "http://127.0.0.1:3517" || normalized === "http://localhost:3517") {
+    return "https://api.contextbase.localhost"
+  }
+  return normalized
 }
 
 function isCaptureClient(value: unknown): value is CaptureClientDto {

@@ -125,6 +125,13 @@ describe("postgres file repository", () => {
           storageStatus: "available",
         },
       },
+      {
+        action: "update",
+        tableName: "users",
+        values: {
+          avatarFileObjectId: "fil_avatar",
+        },
+      },
     ])
   })
 

@@ -24,7 +24,7 @@ type SetupMode = "pair" | "existing"
 
 function PopupApp() {
   const storage = useMemo(() => chromeStorageArea(chrome.storage.local), [])
-  const [apiBaseUrl, setApiBaseUrl] = useState("http://127.0.0.1:3517")
+  const [apiBaseUrl, setApiBaseUrl] = useState("https://api.contextbase.localhost")
   const [apiToken, setApiToken] = useState("")
   const [captureToken, setCaptureToken] = useState("")
   const [config, setConfig] = useState<ExtensionConfig | null>(null)

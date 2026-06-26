@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm"
 
 import type { DbClient } from "../../db/client"
-import { fileObjects } from "../../db/schema"
+import { fileObjects, users } from "../../db/schema"
 import type { FileStorageStatus, FileStore } from "./service"
 
 export function createPostgresFileStore(client: DbClient): FileStore {
@@ -27,6 +27,27 @@ export function createPostgresFileStore(client: DbClient): FileStore {
       if (!file) throw new Error("Avatar file object insert failed")
       return file
     },
+    createPendingWorkspaceFileObject: async (_context, input) => {
+      const [file] = await client.db
+        .insert(fileObjects)
+        .values({
+          createdById: input.createdById,
+          createdByKind: input.createdByKind,
+          originalFilename: input.originalFilename ?? null,
+          ownerId: null,
+          ownerKind: null,
+          provider: input.provider,
+          publicAssetId: null,
+          scopeKind: "workspace",
+          usageKind: "workspace_file",
+          visibility: "private",
+          workspaceId: input.workspaceId,
+          workspaceSlug: input.workspaceSlug,
+        })
+        .returning({ id: fileObjects.id })
+      if (!file) throw new Error("Workspace file object insert failed")
+      return file
+    },
     finalizeUserAvatarUpload: async (_context, input) =>
       client.db.transaction(async (tx) => {
         const [file] = await tx
@@ -50,6 +71,40 @@ export function createPostgresFileStore(client: DbClient): FileStore {
           )
           .returning({ id: fileObjects.id })
         if (!file) throw new Error("User avatar finalization failed")
+
+        await tx
+          .update(users)
+          .set({
+            avatarFileObjectId: input.fileId,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, input.ownerId))
+
+        return input
+      }),
+    finalizeWorkspaceFileUpload: async (_context, input) =>
+      client.db.transaction(async (tx) => {
+        const [file] = await tx
+          .update(fileObjects)
+          .set({
+            byteSize: input.byteSize,
+            contentType: input.contentType,
+            objectKey: input.objectKey,
+            originalFilename: input.originalFilename,
+            sha256: input.sha256,
+            storageStatus: "available",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(fileObjects.id, input.fileId),
+              eq(fileObjects.scopeKind, "workspace"),
+              eq(fileObjects.workspaceId, input.workspaceId),
+              eq(fileObjects.storageStatus, "pending"),
+            ),
+          )
+          .returning({ id: fileObjects.id })
+        if (!file) throw new Error("Workspace file finalization failed")
 
         return input
       }),

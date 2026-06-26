@@ -65,6 +65,18 @@ export const queries = defineQueries({
       .orderBy("sequenceNumber", "asc")
       .limit(args.limit)
   }),
+  capturedSessionArtifacts: defineAppQuery(capturedSessionArgs, ({ args, ctx }) => {
+    if (!hasActiveWorkspace(ctx)) {
+      return zql.capturedSessionArtifacts.where(({ or }) => or())
+    }
+
+    return zql.capturedSessionArtifacts
+      .where("workspaceId", ctx.activeWorkspaceId)
+      .where("capturedSessionId", args.capturedSessionId)
+      .orderBy("createdAt", "asc")
+      .orderBy("id", "asc")
+      .limit(args.limit)
+  }),
   syncEventsByCapturedSession: defineAppQuery(capturedSessionArgs, ({ args, ctx }) => {
     if (!hasActiveWorkspace(ctx)) {
       return zql.sessionCaptureSyncEvents.where(({ or }) => or())

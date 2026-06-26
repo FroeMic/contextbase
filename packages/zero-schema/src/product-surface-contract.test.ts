@@ -70,6 +70,7 @@ const serverOnlyTables = ["apiTokens", "authMagicLinks", "authSessions"]
 
 const expectedQueryNames = [
   "activeWorkspace",
+  "capturedSessionArtifacts",
   "capturedSessionMessages",
   "capturedSessionsByWorkspace",
   "currentUser",

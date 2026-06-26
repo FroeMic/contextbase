@@ -9,7 +9,7 @@ import { hashOAuthToken } from "../oauth/service"
 import { hashApiToken } from "./bootstrap"
 
 export type AuthenticatedContext = {
-  authKind?: "api_token" | "oauth_access_token"
+  authKind?: "api_token" | "capture_client" | "oauth_access_token"
   grantId?: string
   principalId: string
   principalKind: string

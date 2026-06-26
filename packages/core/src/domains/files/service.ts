@@ -6,9 +6,11 @@ import { createId } from "../../shared/ids"
 import type { AuthenticatedContext } from "../auth/authenticate"
 import {
   type BodySource,
+  buildFileObjectKey,
   buildPublicAvatarAssetUrl,
   buildPublicAvatarObjectKey,
   computeSha256Hex,
+  type FilePolicy,
   InvalidFileUploadError,
   MAX_FILE_UPLOAD_BYTES,
   normalizeContentType,
@@ -32,6 +34,16 @@ export type PublicAvatarUploadResultDto = {
   objectKey: string
   publicAssetId: string
   sha256: string
+}
+
+export type WorkspaceFileUploadResultDto = {
+  byteSize: number
+  contentType: string
+  fileId: string
+  objectKey: string
+  originalFilename: string | null
+  sha256: string
+  storageStatus: "available"
 }
 
 export type FileContentDescriptorDto = {
@@ -82,6 +94,15 @@ export type ResolvedCreatePendingPublicAvatarFileObjectInput = {
   scopeKind: "user"
 }
 
+export type ResolvedCreatePendingWorkspaceFileObjectInput = {
+  createdById: string | null
+  createdByKind: string
+  originalFilename?: string | null
+  provider: string
+  workspaceId: string
+  workspaceSlug: string
+}
+
 export type ResolvedFinalizePublicAvatarUploadInput = {
   byteSize: number
   contentType: string
@@ -92,6 +113,18 @@ export type ResolvedFinalizePublicAvatarUploadInput = {
   publicAssetId: string
   scopeKind: "user"
   sha256: string
+}
+
+export type ResolvedFinalizeWorkspaceFileUploadInput = {
+  byteSize: number
+  contentType: string
+  fileId: string
+  objectKey: string
+  originalFilename: string | null
+  sha256: string
+  storageStatus: "available"
+  workspaceId: string
+  workspaceSlug: string
 }
 
 export type ResolvedMarkFileObjectUploadFailedInput = {
@@ -105,10 +138,18 @@ export type FileStore = {
     context: AuthenticatedContext,
     input: ResolvedCreatePendingPublicAvatarFileObjectInput,
   ) => Promise<{ id: string }>
+  createPendingWorkspaceFileObject?: (
+    context: AuthenticatedContext,
+    input: ResolvedCreatePendingWorkspaceFileObjectInput,
+  ) => Promise<{ id: string }>
   finalizeUserAvatarUpload?: (
     context: AuthenticatedContext,
     input: ResolvedFinalizePublicAvatarUploadInput,
   ) => Promise<ResolvedFinalizePublicAvatarUploadInput>
+  finalizeWorkspaceFileUpload?: (
+    context: AuthenticatedContext,
+    input: ResolvedFinalizeWorkspaceFileUploadInput,
+  ) => Promise<ResolvedFinalizeWorkspaceFileUploadInput>
   findFileContentDescriptorByIdInWorkspace?: (
     context: AuthenticatedContext,
     fileId: string,
@@ -212,6 +253,96 @@ export function uploadUserAvatar(
   })
 }
 
+export function uploadWorkspaceFile(
+  store: FileStore,
+  storage: StorageProvider,
+  context: AuthenticatedContext,
+  input: {
+    allowedContentTypes?: string[]
+    file: FileUploadInput
+    maxBytes?: number
+  },
+): Effect.Effect<
+  WorkspaceFileUploadResultDto,
+  ForbiddenError | InternalError | InvalidFileUploadError | StorageError
+> {
+  return Effect.tryPromise({
+    try: async () => {
+      if (!store.createPendingWorkspaceFileObject || !store.finalizeWorkspaceFileUpload) {
+        throw new Error("File store cannot upload workspace files")
+      }
+
+      const normalizedFile = await normalizeWorkspaceFileUpload(input.file, {
+        allowedContentTypes: input.allowedContentTypes ?? ["image/*"],
+        maxBytes: input.maxBytes ?? MAX_FILE_UPLOAD_BYTES,
+      })
+      const pendingFile = await store.createPendingWorkspaceFileObject(context, {
+        createdById: context.principalId,
+        createdByKind: context.principalKind,
+        originalFilename: normalizedFile.originalFilename,
+        provider: storage.id,
+        workspaceId: context.workspaceId,
+        workspaceSlug: context.workspaceSlug,
+      })
+      const objectKey = buildFileObjectKey({
+        fileId: pendingFile.id,
+        workspaceId: context.workspaceId,
+      })
+
+      try {
+        await runEffectOrThrow(
+          storage.putObject({
+            body: normalizedFile.body,
+            contentLength: normalizedFile.contentLength,
+            contentType: normalizedFile.contentType,
+            objectKey,
+          }),
+        )
+      } catch (cause) {
+        await markUploadFailed(store, context, pendingFile.id, "failed")
+        throw cause
+      }
+
+      const finalizeInput: ResolvedFinalizeWorkspaceFileUploadInput = {
+        byteSize: normalizedFile.contentLength,
+        contentType: normalizedFile.contentType,
+        fileId: pendingFile.id,
+        objectKey,
+        originalFilename: normalizedFile.originalFilename,
+        sha256: normalizedFile.sha256,
+        storageStatus: "available",
+        workspaceId: context.workspaceId,
+        workspaceSlug: context.workspaceSlug,
+      }
+
+      try {
+        const file = await store.finalizeWorkspaceFileUpload(context, finalizeInput)
+        return {
+          byteSize: file.byteSize,
+          contentType: file.contentType,
+          fileId: file.fileId,
+          objectKey: file.objectKey,
+          originalFilename: file.originalFilename,
+          sha256: file.sha256,
+          storageStatus: file.storageStatus,
+        }
+      } catch (cause) {
+        await cleanupStoredObjectAfterFinalizationFailure(
+          store,
+          storage,
+          context,
+          pendingFile.id,
+          objectKey,
+        )
+        throw cause
+      }
+    },
+    catch: preserveExpectedError<
+      ForbiddenError | InternalError | InvalidFileUploadError | StorageError
+    >("Failed to upload workspace file"),
+  })
+}
+
 export function getFileContentDescriptor(
   store: FileStore,
   context: AuthenticatedContext,
@@ -269,6 +400,23 @@ async function normalizeAvatarUpload(file: FileUploadInput) {
     contentLength: normalizedBody.byteLength,
     contentType: "image/webp",
     originalFilename: null,
+    sha256,
+  }
+}
+
+async function normalizeWorkspaceFileUpload(file: FileUploadInput, policy: FilePolicy) {
+  const contentType = normalizeContentType(file.contentType)
+  await runEffectOrThrow(
+    validateFilePolicy({ contentLength: file.contentLength, contentType }, policy),
+  )
+  const body = file.body as Uint8Array
+  const sha256 = await runEffectOrThrow(computeSha256Hex(body))
+
+  return {
+    body,
+    contentLength: file.contentLength,
+    contentType,
+    originalFilename: file.originalFilename ?? null,
     sha256,
   }
 }

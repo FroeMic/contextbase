@@ -79,6 +79,7 @@ describe("Zero custom queries", () => {
         .sort(),
     ).toEqual([
       "activeWorkspace",
+      "capturedSessionArtifacts",
       "capturedSessionMessages",
       "capturedSessionsByWorkspace",
       "currentUser",
@@ -127,10 +128,17 @@ describe("Zero custom queries", () => {
     expect(ast.limit).toBe(25)
   })
 
-  test("scopes captured message and sync event reads to workspace-owned sessions", () => {
+  test("scopes captured artifact, message, and sync event reads to workspace-owned sessions", () => {
+    const artifactsAst = queryAst("capturedSessionArtifacts", { capturedSessionId: "cps_123" })
     const messagesAst = queryAst("capturedSessionMessages", { capturedSessionId: "cps_123" })
     const eventsAst = queryAst("syncEventsByCapturedSession", { capturedSessionId: "cps_123" })
 
+    expect(hasSimpleWhere(artifactsAst, "workspaceId", "=", "wrk_demo")).toBe(true)
+    expect(hasSimpleWhere(artifactsAst, "capturedSessionId", "=", "cps_123")).toBe(true)
+    expect(artifactsAst.orderBy).toEqual([
+      ["createdAt", "asc"],
+      ["id", "asc"],
+    ])
     expect(hasSimpleWhere(messagesAst, "workspaceId", "=", "wrk_demo")).toBe(true)
     expect(hasSimpleWhere(messagesAst, "capturedSessionId", "=", "cps_123")).toBe(true)
     expect(messagesAst.orderBy).toEqual([["sequenceNumber", "asc"]])

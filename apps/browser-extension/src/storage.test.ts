@@ -85,4 +85,16 @@ describe("extension storage and pairing", () => {
     await expect(getExtensionConfig(storage)).resolves.toBeNull()
     expect(storage.dump()).toEqual({})
   })
+
+  test("migrates the old direct local API port to the stable local-domain API", async () => {
+    const storage = createMemoryStorageArea({
+      apiBaseUrl: "http://127.0.0.1:3517",
+      captureToken: "cbc_existing",
+    })
+
+    await expect(getExtensionConfig(storage)).resolves.toMatchObject({
+      apiBaseUrl: "https://api.contextbase.localhost",
+      captureToken: "cbc_existing",
+    })
+  })
 })

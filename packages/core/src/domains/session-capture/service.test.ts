@@ -82,6 +82,8 @@ describe("session capture service", () => {
       authKind: "capture_client",
       captureClientId: "cpc_123",
       permissions: ["session_capture:write", "session_capture:status"],
+      principalId: "cpc_123",
+      principalKind: "capture_client",
       role: "capture_client",
       workspaceId: "wrk_123",
       workspaceSlug: "core",
@@ -242,6 +244,49 @@ describe("session capture service", () => {
       status: "accepted",
     })
   })
+
+  test("resolves image artifact source message keys to captured message ids", async () => {
+    const store = createInMemoryStore()
+
+    await Effect.runPromise(
+      ingestManualSyncBatch(store, pairedClient, {
+        idempotencyKey: "image-sync-1",
+        provider: { displayName: "ChatGPT", providerKey: "chatgpt" },
+        session: {
+          kind: "chat",
+          sourceSessionId: "chat-1",
+          sourceUrl: "https://chatgpt.com/c/chat-1",
+        },
+        messages: [
+          {
+            contentText: "See this screenshot",
+            role: "user",
+            sequenceNumber: "000001",
+            sourceMessageId: "msg-1",
+          },
+        ],
+        artifacts: [
+          {
+            artifactKind: "image",
+            capturedMessageSourceKey: "msg-1",
+            contentType: "image/png",
+            fileObjectId: "file_image",
+            sourceArtifactKey: "img-1",
+            title: "Screenshot",
+          },
+        ],
+      }),
+    )
+
+    expect(store.artifacts).toEqual([
+      expect.objectContaining({
+        artifactKind: "image",
+        capturedMessageId: "cpm_1",
+        fileObjectId: "file_image",
+        sourceArtifactKey: "img-1",
+      }),
+    ])
+  })
 })
 
 function createInMemoryStore() {
@@ -254,13 +299,16 @@ function createInMemoryStore() {
   const syncBatches: unknown[] = []
   const syncEvents: Array<{ status: string }> = []
   const sourceSnapshots: Array<{ snapshotJson?: string }> = []
+  const artifacts: unknown[] = []
   const store: SessionCaptureStore & {
+    artifacts: unknown[]
     messages: Array<{ contentText?: string; id: string; sourceMessageKey: string }>
     sessions: Array<{ id: string; metadataJson?: string; sourceSessionKey: string; title?: string }>
     sourceSnapshots: Array<{ snapshotJson?: string }>
     syncBatches: unknown[]
     syncEvents: Array<{ status: string }>
   } = {
+    artifacts,
     messages: [],
     sessions: [],
     sourceSnapshots,
@@ -289,7 +337,10 @@ function createInMemoryStore() {
       return { id: `css_${sourceSnapshots.length}` }
     },
     touchCaptureClient: async () => undefined,
-    upsertCapturedArtifact: async () => ({ id: "cpa_1" }),
+    upsertCapturedArtifact: async (input) => {
+      artifacts.push(input)
+      return { id: `cpa_${artifacts.length}` }
+    },
     upsertCapturedMessage: async (input) => {
       const existing = messages.get(input.sourceMessageKey)
       const message = {

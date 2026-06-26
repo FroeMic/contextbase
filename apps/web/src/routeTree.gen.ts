@@ -23,6 +23,8 @@ import { Route as AuthInvitationsAcceptRouteImport } from './routes/auth.invitat
 import { Route as AuthDesktopVerifyRouteImport } from './routes/auth.desktop.verify'
 import { Route as AppWorkspaceSlugSettingsRouteRouteImport } from './routes/app/$workspaceSlug/settings/route'
 import { Route as AppWorkspaceSlugSettingsIndexRouteImport } from './routes/app/$workspaceSlug/settings/index'
+import { Route as AppWorkspaceSlugChatsIndexRouteImport } from './routes/app/$workspaceSlug/chats/index'
+import { Route as AppWorkspaceSlugChatsCapturedSessionIdRouteImport } from './routes/app/$workspaceSlug/chats/$capturedSessionId'
 import { Route as AppWorkspaceSlugSettingsWorkspaceIndexRouteImport } from './routes/app/$workspaceSlug/settings/workspace/index'
 import { Route as AppWorkspaceSlugSettingsDevelopersIndexRouteImport } from './routes/app/$workspaceSlug/settings/developers/index'
 import { Route as AppWorkspaceSlugSettingsAccountIndexRouteImport } from './routes/app/$workspaceSlug/settings/account/index'
@@ -106,6 +108,18 @@ const AppWorkspaceSlugSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AppWorkspaceSlugSettingsRouteRoute,
   } as any)
+const AppWorkspaceSlugChatsIndexRoute =
+  AppWorkspaceSlugChatsIndexRouteImport.update({
+    id: '/chats/',
+    path: '/chats/',
+    getParentRoute: () => AppWorkspaceSlugRouteRoute,
+  } as any)
+const AppWorkspaceSlugChatsCapturedSessionIdRoute =
+  AppWorkspaceSlugChatsCapturedSessionIdRouteImport.update({
+    id: '/chats/$capturedSessionId',
+    path: '/chats/$capturedSessionId',
+    getParentRoute: () => AppWorkspaceSlugRouteRoute,
+  } as any)
 const AppWorkspaceSlugSettingsWorkspaceIndexRoute =
   AppWorkspaceSlugSettingsWorkspaceIndexRouteImport.update({
     id: '/workspace/',
@@ -181,6 +195,8 @@ export interface FileRoutesByFullPath {
   '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/auth/signup/verify': typeof AuthSignupVerifyRoute
   '/app/$workspaceSlug/': typeof AppWorkspaceSlugIndexRoute
+  '/app/$workspaceSlug/chats/$capturedSessionId': typeof AppWorkspaceSlugChatsCapturedSessionIdRoute
+  '/app/$workspaceSlug/chats/': typeof AppWorkspaceSlugChatsIndexRoute
   '/app/$workspaceSlug/settings/': typeof AppWorkspaceSlugSettingsIndexRoute
   '/app/$workspaceSlug/settings/account/profile': typeof AppWorkspaceSlugSettingsAccountProfileRoute
   '/app/$workspaceSlug/settings/account/security': typeof AppWorkspaceSlugSettingsAccountSecurityRoute
@@ -205,6 +221,8 @@ export interface FileRoutesByTo {
   '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/auth/signup/verify': typeof AuthSignupVerifyRoute
   '/app/$workspaceSlug': typeof AppWorkspaceSlugIndexRoute
+  '/app/$workspaceSlug/chats/$capturedSessionId': typeof AppWorkspaceSlugChatsCapturedSessionIdRoute
+  '/app/$workspaceSlug/chats': typeof AppWorkspaceSlugChatsIndexRoute
   '/app/$workspaceSlug/settings': typeof AppWorkspaceSlugSettingsIndexRoute
   '/app/$workspaceSlug/settings/account/profile': typeof AppWorkspaceSlugSettingsAccountProfileRoute
   '/app/$workspaceSlug/settings/account/security': typeof AppWorkspaceSlugSettingsAccountSecurityRoute
@@ -232,6 +250,8 @@ export interface FileRoutesById {
   '/auth/invitations/accept': typeof AuthInvitationsAcceptRoute
   '/auth/signup/verify': typeof AuthSignupVerifyRoute
   '/app/$workspaceSlug/': typeof AppWorkspaceSlugIndexRoute
+  '/app/$workspaceSlug/chats/$capturedSessionId': typeof AppWorkspaceSlugChatsCapturedSessionIdRoute
+  '/app/$workspaceSlug/chats/': typeof AppWorkspaceSlugChatsIndexRoute
   '/app/$workspaceSlug/settings/': typeof AppWorkspaceSlugSettingsIndexRoute
   '/app/$workspaceSlug/settings/account/profile': typeof AppWorkspaceSlugSettingsAccountProfileRoute
   '/app/$workspaceSlug/settings/account/security': typeof AppWorkspaceSlugSettingsAccountSecurityRoute
@@ -260,6 +280,8 @@ export interface FileRouteTypes {
     | '/auth/invitations/accept'
     | '/auth/signup/verify'
     | '/app/$workspaceSlug/'
+    | '/app/$workspaceSlug/chats/$capturedSessionId'
+    | '/app/$workspaceSlug/chats/'
     | '/app/$workspaceSlug/settings/'
     | '/app/$workspaceSlug/settings/account/profile'
     | '/app/$workspaceSlug/settings/account/security'
@@ -284,6 +306,8 @@ export interface FileRouteTypes {
     | '/auth/invitations/accept'
     | '/auth/signup/verify'
     | '/app/$workspaceSlug'
+    | '/app/$workspaceSlug/chats/$capturedSessionId'
+    | '/app/$workspaceSlug/chats'
     | '/app/$workspaceSlug/settings'
     | '/app/$workspaceSlug/settings/account/profile'
     | '/app/$workspaceSlug/settings/account/security'
@@ -310,6 +334,8 @@ export interface FileRouteTypes {
     | '/auth/invitations/accept'
     | '/auth/signup/verify'
     | '/app/$workspaceSlug/'
+    | '/app/$workspaceSlug/chats/$capturedSessionId'
+    | '/app/$workspaceSlug/chats/'
     | '/app/$workspaceSlug/settings/'
     | '/app/$workspaceSlug/settings/account/profile'
     | '/app/$workspaceSlug/settings/account/security'
@@ -436,6 +462,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceSlugSettingsIndexRouteImport
       parentRoute: typeof AppWorkspaceSlugSettingsRouteRoute
     }
+    '/app/$workspaceSlug/chats/': {
+      id: '/app/$workspaceSlug/chats/'
+      path: '/chats'
+      fullPath: '/app/$workspaceSlug/chats/'
+      preLoaderRoute: typeof AppWorkspaceSlugChatsIndexRouteImport
+      parentRoute: typeof AppWorkspaceSlugRouteRoute
+    }
+    '/app/$workspaceSlug/chats/$capturedSessionId': {
+      id: '/app/$workspaceSlug/chats/$capturedSessionId'
+      path: '/chats/$capturedSessionId'
+      fullPath: '/app/$workspaceSlug/chats/$capturedSessionId'
+      preLoaderRoute: typeof AppWorkspaceSlugChatsCapturedSessionIdRouteImport
+      parentRoute: typeof AppWorkspaceSlugRouteRoute
+    }
     '/app/$workspaceSlug/settings/workspace/': {
       id: '/app/$workspaceSlug/settings/workspace/'
       path: '/workspace'
@@ -556,12 +596,17 @@ const AppWorkspaceSlugSettingsRouteRouteWithChildren =
 interface AppWorkspaceSlugRouteRouteChildren {
   AppWorkspaceSlugSettingsRouteRoute: typeof AppWorkspaceSlugSettingsRouteRouteWithChildren
   AppWorkspaceSlugIndexRoute: typeof AppWorkspaceSlugIndexRoute
+  AppWorkspaceSlugChatsCapturedSessionIdRoute: typeof AppWorkspaceSlugChatsCapturedSessionIdRoute
+  AppWorkspaceSlugChatsIndexRoute: typeof AppWorkspaceSlugChatsIndexRoute
 }
 
 const AppWorkspaceSlugRouteRouteChildren: AppWorkspaceSlugRouteRouteChildren = {
   AppWorkspaceSlugSettingsRouteRoute:
     AppWorkspaceSlugSettingsRouteRouteWithChildren,
   AppWorkspaceSlugIndexRoute: AppWorkspaceSlugIndexRoute,
+  AppWorkspaceSlugChatsCapturedSessionIdRoute:
+    AppWorkspaceSlugChatsCapturedSessionIdRoute,
+  AppWorkspaceSlugChatsIndexRoute: AppWorkspaceSlugChatsIndexRoute,
 }
 
 const AppWorkspaceSlugRouteRouteWithChildren =

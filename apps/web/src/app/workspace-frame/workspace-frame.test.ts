@@ -26,6 +26,8 @@ describe("workspace frame composition", () => {
     expect(frameSource).toContain("AppFrameContent")
     expect(frameSource).toContain("WorkspaceSwitcherMenu")
     expect(frameSource).toContain("Overview")
+    expect(frameSource).toContain("Chats")
+    expect(frameSource).toContain("CapturedChatsSidebarSection")
     expect(frameSource).toContain("activeWorkspaceSlug")
     expect(frameSource).not.toContain("BusinessMenuButton")
     expect(frameSource).not.toContain("BusinessDockButton")
